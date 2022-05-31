@@ -20,20 +20,20 @@
     "test": "true"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "ts-essentials": "^6.0.2",
-    "express": "^4.16.4",
-    "helmet": "^3.16.0",
-    "apicache": "^1.4.0",
-    "compression": "^1.7.4",
-    "ejs": "^2.6.1",
-    "postgraphile": "^4.3.3",
-    "postgraphile-plugin-connection-filter": "^1.0.0-rc.2",
-    "@types/helmet": "^0.0.43",
     "@types/apicache": "^1.2.0",
     "@types/body-parser": "^1.17.0",
     "@types/compression": "^0.0.36",
-    "@types/express": "^4.16.1"
+    "@types/express": "^4.16.1",
+    "@types/helmet": "^0.0.43",
+    "apicache": "^1.4.0",
+    "compression": "^1.7.4",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "helmet": "^3.16.0",
+    "lodash": "^4.17.15",
+    "postgraphile": "^4.12.9",
+    "postgraphile-plugin-connection-filter": "^1.0.0-rc.2",
+    "ts-essentials": "^6.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",
