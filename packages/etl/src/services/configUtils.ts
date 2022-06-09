@@ -10,6 +10,8 @@ export function loadConfig(externalConfigPath: string): SpockConfig {
 
   const mergedConfig = mergeConfig(externalCfg)
 
+  console.log('merged Config:', mergedConfig)
+
   return mergedConfig
 }
 

@@ -62,9 +62,16 @@ export const spockConfigSchema = z
     statsWorker: statsWorkerSchema,
 
     chain: z.object({
-      host: z.string(),
-      name: z.string(),
-      retries: z.number(),
+      mainnet: z.object({
+        host: z.string(),
+        name: z.string(),
+        retries: z.number(),
+      }),
+      arbitrum: z.object({
+        host: z.string(),
+        name: z.string(),
+        retries: z.number(),
+      }),
     }),
     db: z.union([
       z.object({
@@ -92,6 +99,7 @@ export type UserProvidedSpockConfig = DeepPartial<SpockConfig> &
   Pick<SpockConfig, 'startingBlock' | 'lastBlock' | 'extractors' | 'transformers' | 'migrations'> &
   Dictionary<any>
 
+// TODO refactor this to handle multiple hosts
 export function getDefaultConfig(env: Env): DeepPartial<SpockConfig> {
   return {
     processDbLock: 0x1337, // unique number that will be used to acquire lock on database
@@ -113,9 +121,16 @@ export function getDefaultConfig(env: Env): DeepPartial<SpockConfig> {
       interval: 10, // get stats every 10 minutes
     },
     chain: {
-      host: getRequiredString(env, 'VL_CHAIN_HOST'),
-      name: getRequiredString(env, 'VL_CHAIN_NAME'),
-      retries: 15, // retry for ~1 block time ~15 seconds
+      mainnet: {
+        host: getRequiredString(env, 'VL_CHAIN_HOST'),
+        name: getRequiredString(env, 'VL_CHAIN_NAME'),
+        retries: 15, // retry for ~1 block time ~15 seconds
+      },
+      arbitrum: {
+        host: getRequiredString(env, 'VL_CHAIN_HOST_ARB'),
+        name: getRequiredString(env, 'VL_CHAIN_NAME_ARB'),
+        retries: 15, // retry for ~1 block time ~15 seconds
+      },
     },
     db: {
       database: getRequiredString(env, 'VL_DB_DATABASE'),

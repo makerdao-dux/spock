@@ -145,6 +145,7 @@ export async function getLogs(
     return []
   } else if (blocks.length === 1 && !isGanache(services.networkState)) {
     // note: ganache doesnt support this RPC call so we avoid id
+    //TODO provider
     return await services.provider.getLogs({
       address,
       blockHash: blocks[0].hash,

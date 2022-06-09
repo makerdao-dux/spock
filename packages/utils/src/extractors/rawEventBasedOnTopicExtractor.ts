@@ -136,6 +136,7 @@ export async function getLogsBasedOnTopics(
     return []
   } else if (blocks.length === 1 && !isGanache(services.networkState)) {
     // note: ganache doesnt support this RPC call so we avoid id
+    //TODO provider
     return await services.provider.getLogs({
       blockHash: blocks[0].hash,
       topics: topicsRequest,

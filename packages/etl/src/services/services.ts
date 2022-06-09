@@ -5,19 +5,20 @@ import { getNetworkState } from '../ethereum/getNetworkState'
 import { RetryProvider } from '../ethereum/RetryProvider'
 import { getInitialProcessorsState } from '../processors/state'
 import { getAllProcessors, SpockConfig } from './config'
-import { Services, TransactionalServices } from './types'
+import { ProviderManager, ProviderService, Services, TransactionalServices } from './types'
 
-export async function createServices(config: SpockConfig): Promise<Services> {
+export async function createServices(config: SpockConfig): Promise<Partial<Services>> {
   const db = createDB(config.db)
-  const provider = createProvider(config)
-  const networkState = await getNetworkState(provider)
+  const providerService = await createProvider(config)
+  // const networkState = await getNetworkState(provider)
   const processorsState = getInitialProcessorsState(getAllProcessors(config))
 
   return {
-    provider,
+    providerService,
+    // provider,
     ...db,
     config,
-    networkState,
+    // networkState,
     processorsState,
   }
 }
@@ -33,6 +34,30 @@ export async function withTx<T>(services: Services, op: (tx: TransactionalServic
   })
 }
 
-export function createProvider(config: SpockConfig): Provider {
-  return new RetryProvider(config.chain.host, config.chain.retries)
+export async function createProvider(config: SpockConfig): Promise<ProviderService> {
+  const mainnetProvider = new RetryProvider(config.chain.mainnet.host, config.chain.mainnet.retries)
+  const mainnetNetworkState = await getNetworkState(mainnetProvider)
+  const arbitrumProvider = new RetryProvider(config.chain.arbitrum.host, config.chain.arbitrum.retries)
+  const arbitrumNetworkState = await getNetworkState(mainnetProvider)
+  const mainnet = {
+    provider: mainnetProvider,
+    networkState: mainnetNetworkState,
+    tableSchema: 'vulcan2x',
+  } as ProviderManager<'mainnet'>
+
+  const arbitrum = {
+    provider: arbitrumProvider,
+    networkState: arbitrumNetworkState,
+    tableSchema: 'vulcan2xArbitrum',
+  } as ProviderManager<'arbitrum'>
+
+  const getProvider = (chain: string) =>
+    chain === 'mainnet'
+      ? mainnet
+      : chain === 'arbitrum'
+      ? arbitrum
+      : (function () {
+          throw new Error(`Provider for ${chain} not found`)
+        })()
+  return { mainnet, arbitrum, getProvider }
 }

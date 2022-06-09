@@ -3,7 +3,7 @@ import { difference } from 'lodash'
 import { DbConnection, withConnection } from '../db/db'
 import { getBlockByNumber } from '../db/models/Block'
 import { excludeAllJobs, getJob, saveJob, setJobStatus, WritableJobModel } from '../db/models/Job'
-import { Services } from '../services/types'
+import { Services, TableSchema } from '../services/types'
 import { getLogger } from '../utils/logger'
 import { isExtractor, Processor } from './types'
 
@@ -13,46 +13,48 @@ const logger = getLogger('register')
  * Prepares vulcan2x.job table with all processors. Note: this should be called just once per ETL start!
  */
 export async function registerProcessors(services: Services, processors: Processor[]): Promise<void> {
+  console.log('services to use for registering process', services)
   validateIntegrity(processors)
 
   await withConnection(services.db, async (c) => {
+    console.log('wtih connection', services.tableSchema)
     logger.info('De-registering all processors...')
-    await excludeAllJobs(c)
+    await excludeAllJobs(c, services.tableSchema)
 
     logger.info(`Registering configured processors(${processors.length})...`)
     for (const processor of processors) {
-      await registerProcessor(c, processor)
+      await registerProcessor(c, processor, services.tableSchema)
     }
   })
 }
 
-async function registerProcessor(c: DbConnection, processor: Processor): Promise<void> {
-  const jobModel = await getJob(c, processor.name)
+async function registerProcessor(c: DbConnection, processor: Processor, schema: TableSchema): Promise<void> {
+  const jobModel = await getJob(c, processor.name, schema)
 
   if (jobModel) {
     logger.info(
       // prettier-ignore
       `Setting processor ${processor.name} status to 'processing'. Previously: '${jobModel.status}'`,
     )
-    await setJobStatus(c, jobModel, 'processing')
+    await setJobStatus(c, jobModel, 'processing', schema)
   } else {
     const newJob: WritableJobModel = {
       name: processor.name,
-      last_block_id: await getStartingBlockId(c, processor),
+      last_block_id: await getStartingBlockId(c, processor, schema),
       status: 'processing',
     }
 
     logger.info(`Registering a new processor ${processor.name}: (${JSON.stringify(newJob)})`)
-    await saveJob(c, newJob)
+    await saveJob(c, newJob, schema)
   }
 }
 
-async function getStartingBlockId(c: DbConnection, processor: Processor): Promise<number> {
+async function getStartingBlockId(c: DbConnection, processor: Processor, schema: TableSchema): Promise<number> {
   if (processor.startingBlock === undefined) {
     return 0
   }
 
-  const block = await getBlockByNumber(c, processor.startingBlock)
+  const block = await getBlockByNumber(c, processor.startingBlock, schema)
   if (block === undefined) {
     logger.warn(
       `Can't find starting block for ${processor.name}. BlockNumber: ${processor.startingBlock} is not yet synced. It will sync from the global start block`,

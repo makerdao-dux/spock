@@ -19,7 +19,7 @@ export async function etl(config: SpockConfig): Promise<void> {
 
   printSystemInfo(config)
 
-  return startETL(services)
+  return startETL(services as Services) // TODO fix this type error with Partial
 }
 
 export async function startETL(services: Services): Promise<void> {
@@ -29,18 +29,45 @@ export async function startETL(services: Services): Promise<void> {
       await services.config.onStart(services)
     }
 
-    await registerProcessors(services, getAllProcessors(services.config))
+    const mainnetServices = {
+      ...services,
+      provider: services.providerService.mainnet.provider,
+      networkState: services.providerService.mainnet.networkState,
+      tableSchema: services.providerService.mainnet.tableSchema,
+      columnSets: services.columnSetsMainnet,
+    }
+    // mainnetServices.db.columnSets =  services.db.columnSetsMainnet;
 
-    const blockGenerator = new BlockGenerator(services)
+    const arbitrumServices = {
+      ...services,
+      provider: services.providerService.mainnet.provider,
+      networkState: services.providerService.mainnet.networkState,
+      tableSchema: services.providerService.mainnet.tableSchema,
+      columnSets: services.columnSetsArbitrum,
+    }
+
+    // TODO: getAllProcessors should be run for both chains
+    await registerProcessors(mainnetServices, getAllProcessors(mainnetServices.config))
+    await registerProcessors(arbitrumServices, getAllProcessors(arbitrumServices.config))
+
+    const blockGenerator = new BlockGenerator(mainnetServices)
     await blockGenerator.init()
 
+    const arbitrumBlockGenerator = new BlockGenerator(arbitrumServices)
+    await arbitrumBlockGenerator.init()
+
     await Promise.all([
-      blockGenerator.run(services.config.startingBlock, services.config.lastBlock),
-      process(services, services.config.extractors),
-      process(services, services.config.transformers),
-      services.config.statsWorker.enabled ? statsWorker(services) : Promise.resolve(),
+      blockGenerator.run(mainnetServices.config.startingBlock, services.config.lastBlock),
+      blockGenerator.run(arbitrumServices.config.startingBlock, services.config.lastBlock),
+      process(mainnetServices, mainnetServices.config.extractors),
+      process(mainnetServices, mainnetServices.config.transformers),
+      process(arbitrumServices, arbitrumServices.config.extractors),
+      process(arbitrumServices, arbitrumServices.config.transformers),
+      mainnetServices.config.statsWorker.enabled ? statsWorker(mainnetServices) : Promise.resolve(),
+      arbitrumServices.config.statsWorker.enabled ? statsWorker(arbitrumServices) : Promise.resolve(),
     ])
 
     await blockGenerator.deinit()
+    await arbitrumBlockGenerator.deinit()
   })
 }
