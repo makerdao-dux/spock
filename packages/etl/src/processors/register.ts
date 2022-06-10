@@ -13,7 +13,6 @@ const logger = getLogger('register')
  * Prepares vulcan2x.job table with all processors. Note: this should be called just once per ETL start!
  */
 export async function registerProcessors(services: Services, processors: Processor[]): Promise<void> {
-  console.log('services to use for registering process', services)
   validateIntegrity(processors)
 
   await withConnection(services.db, async (c) => {

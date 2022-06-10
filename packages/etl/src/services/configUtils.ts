@@ -10,13 +10,18 @@ export function loadConfig(externalConfigPath: string): SpockConfig {
 
   const mergedConfig = mergeConfig(externalCfg)
 
-  console.log('merged Config:', mergedConfig)
-
   return mergedConfig
+}
+
+function reformatChainInfo(defaultCfg: any, externalCfg: any) {
+  defaultCfg.chain.mainnet = { ...defaultCfg.chain.mainnet, ...externalCfg.mainnet }
+  defaultCfg.chain.arbitrum = { ...defaultCfg.chain.arbitrum, ...externalCfg.arbitrum }
 }
 
 export function mergeConfig(externalCfg: any): SpockConfig {
   const defaultCfg = getDefaultConfig(process.env)
+
+  reformatChainInfo(defaultCfg, externalCfg)
 
   const finalConfig = merge({}, defaultCfg, externalCfg) as any
   return spockConfigSchema.parse(finalConfig)

@@ -33,7 +33,7 @@ export function createDB(
     pg: PgClient,
     db: PgClient({ ...config }),
     columnSetsMainnet: getColumnSets(PgClient, 'vulcan2x'),
-    columnSetsArbitrum: getColumnSets(PgClient, 'vulcan2xArbitrum'),
+    columnSetsArbitrum: getColumnSets(PgClient, 'vulcan2xarbitrum'),
   }
 }
 
@@ -59,7 +59,7 @@ export function makeNullUndefined<T>(value: T | null): T | undefined {
 }
 
 export function getColumnSets(pg: pg.IMain, schema: TableSchema) {
-  const extracted = schema === 'vulcan2x' ? 'extracted' : 'extractedArbitrum'
+  const extracted = schema === 'vulcan2x' ? 'extracted' : 'extractedarbitrum'
   return {
     block: new pg.helpers.ColumnSet(['number', 'hash', 'timestamp'], {
       table: new pg.helpers.TableName({ table: 'block', schema }),

@@ -11,7 +11,7 @@ export async function createServices(config: SpockConfig): Promise<Partial<Servi
   const db = createDB(config.db)
   const providerService = await createProvider(config)
   // const networkState = await getNetworkState(provider)
-  const processorsState = getInitialProcessorsState(getAllProcessors(config))
+  // const processorsState = getInitialProcessorsState(getAllProcessors(config))
 
   return {
     providerService,
@@ -19,7 +19,7 @@ export async function createServices(config: SpockConfig): Promise<Partial<Servi
     ...db,
     config,
     // networkState,
-    processorsState,
+    // processorsState,
   }
 }
 
@@ -48,7 +48,7 @@ export async function createProvider(config: SpockConfig): Promise<ProviderServi
   const arbitrum = {
     provider: arbitrumProvider,
     networkState: arbitrumNetworkState,
-    tableSchema: 'vulcan2xArbitrum',
+    tableSchema: 'vulcan2xarbitrum',
   } as ProviderManager<'arbitrum'>
 
   const getProvider = (chain: string) =>

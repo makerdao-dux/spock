@@ -4,6 +4,7 @@ import { BlockGenerator } from './blockGenerator/blockGenerator'
 import { withLock } from './db/locks'
 import { process } from './processors/process'
 import { registerProcessors } from './processors/register'
+import { getInitialProcessorsState } from './processors/state'
 import { getAllProcessors, SpockConfig } from './services/config'
 import { createServices } from './services/services'
 import { Services } from './services/types'
@@ -31,6 +32,8 @@ export async function startETL(services: Services): Promise<void> {
 
     const mainnetServices = {
       ...services,
+      //@ts-ignore
+      config: { ...services.config, ...services.config.mainnet },
       provider: services.providerService.mainnet.provider,
       networkState: services.providerService.mainnet.networkState,
       tableSchema: services.providerService.mainnet.tableSchema,
@@ -40,13 +43,20 @@ export async function startETL(services: Services): Promise<void> {
 
     const arbitrumServices = {
       ...services,
-      provider: services.providerService.mainnet.provider,
-      networkState: services.providerService.mainnet.networkState,
-      tableSchema: services.providerService.mainnet.tableSchema,
+      //@ts-ignore
+      config: { ...services.config, ...services.config.arbitrum },
+      provider: services.providerService.arbitrum.provider,
+      networkState: services.providerService.arbitrum.networkState,
+      tableSchema: services.providerService.arbitrum.tableSchema,
       columnSets: services.columnSetsArbitrum,
     }
 
-    // TODO: getAllProcessors should be run for both chains
+    const mainnetProcessorsState = getInitialProcessorsState(getAllProcessors(mainnetServices.config))
+    const arbitrumProcessorsState = getInitialProcessorsState(getAllProcessors(arbitrumServices.config))
+
+    mainnetServices.processorsState = mainnetProcessorsState
+    arbitrumServices.processorsState = arbitrumProcessorsState
+
     await registerProcessors(mainnetServices, getAllProcessors(mainnetServices.config))
     await registerProcessors(arbitrumServices, getAllProcessors(arbitrumServices.config))
 
@@ -57,8 +67,8 @@ export async function startETL(services: Services): Promise<void> {
     await arbitrumBlockGenerator.init()
 
     await Promise.all([
-      blockGenerator.run(mainnetServices.config.startingBlock, services.config.lastBlock),
-      blockGenerator.run(arbitrumServices.config.startingBlock, services.config.lastBlock),
+      blockGenerator.run(mainnetServices.config.startingBlock, services.config.lastBlock), //fix this last block thing
+      arbitrumBlockGenerator.run(arbitrumServices.config.startingBlock, services.config.lastBlock),
       process(mainnetServices, mainnetServices.config.extractors),
       process(mainnetServices, mainnetServices.config.transformers),
       process(arbitrumServices, arbitrumServices.config.extractors),
