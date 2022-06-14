@@ -39,7 +39,6 @@ export async function startETL(services: Services): Promise<void> {
       tableSchema: services.providerService.mainnet.tableSchema,
       columnSets: services.columnSetsMainnet,
     }
-    // mainnetServices.db.columnSets =  services.db.columnSetsMainnet;
 
     const arbitrumServices = {
       ...services,
@@ -57,27 +56,38 @@ export async function startETL(services: Services): Promise<void> {
     mainnetServices.processorsState = mainnetProcessorsState
     arbitrumServices.processorsState = arbitrumProcessorsState
 
-    await registerProcessors(mainnetServices, getAllProcessors(mainnetServices.config))
-    await registerProcessors(arbitrumServices, getAllProcessors(arbitrumServices.config))
+    const multServices: Services[] = [mainnetServices, arbitrumServices]
 
-    const blockGenerator = new BlockGenerator(mainnetServices)
-    await blockGenerator.init()
+    await Promise.all(
+      multServices.map(async (s) => {
+        await registerProcessors(s, getAllProcessors(s.config))
+      }),
+    )
 
-    const arbitrumBlockGenerator = new BlockGenerator(arbitrumServices)
-    await arbitrumBlockGenerator.init()
+    const bGens = multServices.map((s) => {
+      const blockGenerator = new BlockGenerator(s)
+      return blockGenerator
+    })
 
-    await Promise.all([
-      blockGenerator.run(mainnetServices.config.startingBlock, services.config.lastBlock), //fix this last block thing
-      arbitrumBlockGenerator.run(arbitrumServices.config.startingBlock, services.config.lastBlock),
-      process(mainnetServices, mainnetServices.config.extractors),
-      process(mainnetServices, mainnetServices.config.transformers),
-      process(arbitrumServices, arbitrumServices.config.extractors),
-      process(arbitrumServices, arbitrumServices.config.transformers),
-      mainnetServices.config.statsWorker.enabled ? statsWorker(mainnetServices) : Promise.resolve(),
-      arbitrumServices.config.statsWorker.enabled ? statsWorker(arbitrumServices) : Promise.resolve(),
-    ])
+    await Promise.all(
+      bGens.map(async (bg) => {
+        await bg.init()
+      }),
+    )
 
-    await blockGenerator.deinit()
-    await arbitrumBlockGenerator.deinit()
+    await Promise.all(
+      multServices.map(async (s, i) => {
+        await bGens[i].run(s.config.startingBlock, services.config.lastBlock), // note this might be a bug: services.config.lastBlock
+          await process(s, s.config.extractors),
+          await process(s, s.config.transformers),
+          await (s.config.statsWorker.enabled ? statsWorker(s) : Promise.resolve())
+      }),
+    )
+
+    await Promise.all(
+      bGens.map(async (blockGenerator, i) => {
+        await blockGenerator.deinit()
+      }),
+    )
   })
 }
