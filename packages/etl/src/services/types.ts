@@ -22,7 +22,6 @@ export interface ProviderService {
 }
 
 export interface Services {
-  providerService: ProviderService
   provider: Provider
   db: DB
   pg: pgPromise.IMain

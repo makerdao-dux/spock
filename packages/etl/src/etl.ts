@@ -16,76 +16,56 @@ ethers.errors.setLogLevel('error')
 const logger = getLogger('runner')
 
 export async function etl(config: SpockConfig): Promise<void> {
-  const services = await createServices(config)
+  const chainServices = await createServices(config)
 
   printSystemInfo(config)
 
-  return startETL(services as Services) // TODO fix this type error with Partial
+  return startETL(chainServices)
 }
 
-export async function startETL(services: Services): Promise<void> {
-  await withLock(services.db, services.config.processDbLock, async () => {
-    if (services.config.onStart) {
+export async function startETL(chainServices: Services[]): Promise<void> {
+  const [primaryService] = chainServices
+
+  await withLock(primaryService.db, primaryService.config.processDbLock, async () => {
+    //TODO refactor this to work with chainServices
+    if (primaryService.config.onStart) {
       logger.debug('Running onStart hook.')
-      await services.config.onStart(services)
+      await primaryService.config.onStart(primaryService)
     }
 
-    const mainnetServices = {
-      ...services,
-      //@ts-ignore
-      config: { ...services.config, ...services.config.mainnet },
-      provider: services.providerService.mainnet.provider,
-      networkState: services.providerService.mainnet.networkState,
-      tableSchema: services.providerService.mainnet.tableSchema,
-      columnSets: services.columnSetsMainnet,
-    }
-
-    const arbitrumServices = {
-      ...services,
-      //@ts-ignore
-      config: { ...services.config, ...services.config.arbitrum },
-      provider: services.providerService.arbitrum.provider,
-      networkState: services.providerService.arbitrum.networkState,
-      tableSchema: services.providerService.arbitrum.tableSchema,
-      columnSets: services.columnSetsArbitrum,
-    }
-
-    const mainnetProcessorsState = getInitialProcessorsState(getAllProcessors(mainnetServices.config))
-    const arbitrumProcessorsState = getInitialProcessorsState(getAllProcessors(arbitrumServices.config))
-
-    mainnetServices.processorsState = mainnetProcessorsState
-    arbitrumServices.processorsState = arbitrumProcessorsState
-
-    const multServices: Services[] = [mainnetServices, arbitrumServices]
-
+    // Register the processors for each chain service
     await Promise.all(
-      multServices.map(async (s) => {
+      chainServices.map(async (s) => {
         await registerProcessors(s, getAllProcessors(s.config))
       }),
     )
 
-    const bGens = multServices.map((s) => {
+    // Create block generators for each chain service
+    const blockGenerators = chainServices.map((s) => {
       const blockGenerator = new BlockGenerator(s)
       return blockGenerator
     })
 
+    // Initialize each block generator
     await Promise.all(
-      bGens.map(async (bg) => {
+      blockGenerators.map(async (bg) => {
         await bg.init()
       }),
     )
 
+    // Begin processing for each chain service
     await Promise.all(
-      multServices.map(async (s, i) => {
-        await bGens[i].run(s.config.startingBlock, services.config.lastBlock), // note this might be a bug: services.config.lastBlock
+      chainServices.map(async (s, i) => {
+        await blockGenerators[i].run(s.config.startingBlock, primaryService.config.lastBlock), // note this might be a bug: primaryServce.config.lastBlock
           await process(s, s.config.extractors),
           await process(s, s.config.transformers),
           await (s.config.statsWorker.enabled ? statsWorker(s) : Promise.resolve())
       }),
     )
 
+    // Shut down each block generator when finished
     await Promise.all(
-      bGens.map(async (blockGenerator, i) => {
+      blockGenerators.map(async (blockGenerator, i) => {
         await blockGenerator.deinit()
       }),
     )
