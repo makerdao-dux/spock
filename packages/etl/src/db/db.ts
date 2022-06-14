@@ -1,6 +1,6 @@
 import pg from 'pg-promise'
 import { IConnectionParameters } from 'pg-promise/typescript/pg-subset'
-import { TableSchema } from '../services/types'
+import { SupportedChains, TableSchema } from '../services/types'
 
 import { getLogger } from '../utils/logger'
 
@@ -14,7 +14,11 @@ export type Connection = DbConnection | DbTransactedConnection
 
 export function createDB(
   config: IConnectionParameters,
-): { db: DB; pg: pg.IMain; columnSetsMainnet: ColumnSets; columnSetsArbitrum: ColumnSets } {
+): {
+  db: DB
+  pg: pg.IMain
+  getColumnSetsForChain: (schema: TableSchema) => ColumnSets
+} {
   const PgClient = pg({
     receive: (_data, res, e) => {
       // avoid clutter in output
@@ -32,8 +36,7 @@ export function createDB(
   return {
     pg: PgClient,
     db: PgClient({ ...config }),
-    columnSetsMainnet: getColumnSets(PgClient, 'vulcan2x'),
-    columnSetsArbitrum: getColumnSets(PgClient, 'vulcan2xarbitrum'),
+    getColumnSetsForChain: (schema) => getColumnSets(PgClient, schema),
   }
 }
 

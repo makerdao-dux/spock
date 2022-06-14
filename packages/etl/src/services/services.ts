@@ -21,18 +21,19 @@ export async function createServices(config: SpockConfig): Promise<Services[]> {
       // assert(Object.keys(SUPPORTED_CHAINS).includes(chain), `${chain} is not a supported chain`)
       // TODO better validation & typing here:
       const providerManager = providerService.getProvider(chain as SupportedChains)
+      const columnSets = db.getColumnSetsForChain(providerManager.tableSchema)
 
       const serv: Services = {
         ...db,
         //@ts-ignore //fixme
-        config: { ...config, ...config[chain] },
+        config: { ...config, ...config.chain[chain] },
         provider: providerManager.provider,
         networkState: providerManager.networkState,
         tableSchema: providerManager.tableSchema, //why is this on provider service?
-        columnSets: db.columnSetsMainnet,
+        columnSets,
         processorsState: getInitialProcessorsState(
           //@ts-ignore //fixme
-          getAllProcessors({ ...config, ...config[chain] }),
+          getAllProcessors({ ...config.chain[chain] }),
         ),
       }
       return serv

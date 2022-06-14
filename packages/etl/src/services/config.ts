@@ -45,6 +45,7 @@ const statsWorkerSchema = z.object({
   interval: z.number(), // in minutes
 })
 
+//TODO still need to reconcile this with the user defined config
 export const spockConfigSchema = z
   .object({
     startingBlock: z.number(),
@@ -66,11 +67,19 @@ export const spockConfigSchema = z
         host: z.string(),
         name: z.string(),
         retries: z.number(),
+        startingBlock: z.number(),
+        lastBlock: z.number().optional(),
+        extractors: z.array(extractorSchema),
+        transformers: z.array(transformerSchema),
       }),
       arbitrum: z.object({
         host: z.string(),
         name: z.string(),
         retries: z.number(),
+        startingBlock: z.number(),
+        lastBlock: z.number().optional(),
+        extractors: z.array(extractorSchema),
+        transformers: z.array(transformerSchema),
       }),
     }),
     db: z.union([

@@ -27,8 +27,6 @@ export interface Services {
   pg: pgPromise.IMain
   config: SpockConfig
   columnSets: ColumnSets
-  columnSetsMainnet: ColumnSets
-  columnSetsArbitrum: ColumnSets
   networkState: NetworkState
   processorsState: ProcessorsState
   tableSchema: TableSchema
