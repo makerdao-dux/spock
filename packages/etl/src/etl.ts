@@ -54,14 +54,16 @@ export async function startETL(chainServices: Services[]): Promise<void> {
     )
 
     // Begin processing for each chain service
-    await Promise.all(
-      chainServices.map(async (s, i) => {
-        await blockGenerators[i].run(s.config.startingBlock, primaryService.config.lastBlock), // note this might be a bug: primaryServce.config.lastBlock
-          await process(s, s.config.extractors),
-          await process(s, s.config.transformers),
-          await (s.config.statsWorker.enabled ? statsWorker(s) : Promise.resolve())
-      }),
-    )
+    const promises = chainServices.map((s, i) => {
+      return (
+        blockGenerators[i].run(s.config.startingBlock, s.config.lastBlock), // note this might be a bug: primaryServce.config.lastBlock
+        process(s, s.config.extractors),
+        process(s, s.config.transformers),
+        s.config.statsWorker.enabled ? statsWorker(s) : Promise.resolve()
+      )
+    })
+
+    await Promise.all(promises.flat())
 
     // Shut down each block generator when finished
     await Promise.all(
