@@ -24,52 +24,29 @@ export async function etl(config: SpockConfig): Promise<void> {
 }
 
 export async function startETL(chainServices: Services[]): Promise<void> {
-  const [primaryService] = chainServices
+  // Begin processing for each chain service
+  await Promise.all(
+    chainServices.map((services, i) =>
+      withLock(services.db, services.config.processDbLock + i, async () => {
+        if (services.config.onStart) {
+          logger.debug('Running onStart hook.')
+          await services.config.onStart(services)
+        }
 
-  await withLock(primaryService.db, primaryService.config.processDbLock, async () => {
-    //TODO refactor this to work with chainServices
-    if (primaryService.config.onStart) {
-      logger.debug('Running onStart hook.')
-      await primaryService.config.onStart(primaryService)
-    }
+        await registerProcessors(services, getAllProcessors(services.config))
 
-    // Register the processors for each chain service
-    await Promise.all(
-      chainServices.map(async (s) => {
-        await registerProcessors(s, getAllProcessors(s.config))
-      }),
-    )
+        const blockGenerator = new BlockGenerator(services)
+        await blockGenerator.init()
 
-    // Create block generators for each chain service
-    const blockGenerators = chainServices.map((s) => {
-      const blockGenerator = new BlockGenerator(s)
-      return blockGenerator
-    })
+        await Promise.all([
+          blockGenerator.run(services.config.startingBlock, services.config.lastBlock),
+          process(services, services.config.extractors),
+          process(services, services.config.transformers),
+          services.config.statsWorker.enabled ? statsWorker(services) : Promise.resolve(),
+        ])
 
-    // Initialize each block generator
-    await Promise.all(
-      blockGenerators.map(async (bg) => {
-        await bg.init()
-      }),
-    )
-
-    // Begin processing for each chain service
-    const promises = chainServices.map((s, i) => {
-      return (
-        blockGenerators[i].run(s.config.startingBlock, s.config.lastBlock), // note this might be a bug: primaryServce.config.lastBlock
-        process(s, s.config.extractors),
-        process(s, s.config.transformers),
-        s.config.statsWorker.enabled ? statsWorker(s) : Promise.resolve()
-      )
-    })
-
-    await Promise.all(promises.flat())
-
-    // Shut down each block generator when finished
-    await Promise.all(
-      blockGenerators.map(async (blockGenerator, i) => {
         await blockGenerator.deinit()
       }),
-    )
-  })
+    ),
+  )
 }
