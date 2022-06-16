@@ -131,18 +131,6 @@ export function getDefaultConfig(env: Env): DeepPartial<SpockConfig> {
       enabled: true,
       interval: 10, // get stats every 10 minutes
     },
-    chain: {
-      mainnet: {
-        host: getRequiredString(env, 'VL_CHAIN_HOST'),
-        name: getRequiredString(env, 'VL_CHAIN_NAME'),
-        retries: 15, // retry for ~1 block time ~15 seconds
-      },
-      arbitrum: {
-        host: getRequiredString(env, 'VL_CHAIN_HOST_ARB'),
-        name: getRequiredString(env, 'VL_CHAIN_NAME_ARB'),
-        retries: 15, // retry for ~1 block time ~15 seconds
-      },
-    },
     db: {
       database: getRequiredString(env, 'VL_DB_DATABASE'),
       user: getRequiredString(env, 'VL_DB_USER'),
