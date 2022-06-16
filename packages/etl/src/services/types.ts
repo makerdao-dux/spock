@@ -7,13 +7,12 @@ import { NetworkState } from '../ethereum/getNetworkState'
 import { ProcessorsState } from '../processors/state'
 import { SpockConfig } from './config'
 
-export type TableSchema = 'vulcan2x' | 'vulcan2xarbitrum'
+export type TableSchema = string
 
 export type SupportedChains = 'mainnet' | 'arbitrum'
 export interface ProviderManager<T> {
   provider: Provider
   networkState: NetworkState
-  tableSchema: TableSchema
 }
 export interface ProviderService {
   mainnet: ProviderManager<'mainnet'>
