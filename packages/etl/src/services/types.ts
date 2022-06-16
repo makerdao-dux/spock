@@ -17,7 +17,6 @@ export interface ProviderManager<T> {
 export interface ProviderService {
   mainnet: ProviderManager<'mainnet'>
   arbitrum: ProviderManager<'arbitrum'>
-  getProvider: (chain: SupportedChains) => ProviderManager<SupportedChains>
 }
 
 export interface Services {

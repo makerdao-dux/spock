@@ -10,41 +10,34 @@ import { ProviderManager, ProviderService, Services, SupportedChains, Transactio
 
 export async function createServices(config: SpockConfig): Promise<Services[]> {
   const db = createDB(config.db)
-  const providerService = await createProvider(config)
-  // const networkState = await getNetworkState(provider)
-  // const processorsState = getInitialProcessorsState(getAllProcessors(config))
 
-  // If running multiple chains
-  if ('chain' in config) {
-    const chains = Object.keys(config.chain)
-    const chainServices = chains.map((chain) => {
-      // assert(Object.keys(SUPPORTED_CHAINS).includes(chain), `${chain} is not a supported chain`)
-      // TODO better validation & typing here:
+  const chains = Object.keys(config.chain)
+  const chainServices = chains.map(async (chain) => {
+    // TODO better validation & typing here:
+    //@ts-ignore //fixme
+    const tableSchema = config.chain[chain].tableSchema
+    const columnSets = db.getColumnSetsForChain(tableSchema)
+
+    //@ts-ignore //fixme
+    const provider = createProvider(config.chain[chain].host, config.chain[chain].retries)
+    const networkState = await getNetworkState(provider)
+
+    const serv: Services = {
+      ...db,
       //@ts-ignore //fixme
-      const tableSchema = config.chain[chain].tableSchema
-      const providerManager = providerService.getProvider(chain as SupportedChains)
-      const columnSets = db.getColumnSetsForChain(tableSchema)
-
-      const serv: Services = {
-        ...db,
+      config: { ...config, ...config.chain[chain] },
+      provider,
+      networkState,
+      tableSchema,
+      columnSets,
+      processorsState: getInitialProcessorsState(
         //@ts-ignore //fixme
-        config: { ...config, ...config.chain[chain] },
-        provider: providerManager.provider,
-        networkState: providerManager.networkState,
-        tableSchema,
-        columnSets,
-        processorsState: getInitialProcessorsState(
-          //@ts-ignore //fixme
-          getAllProcessors({ ...config.chain[chain] }),
-        ),
-      }
-      return serv
-    })
-    return chainServices
-  }
-
-  // FIXME I can't believe he's done this!
-  return {} as Services[]
+        getAllProcessors({ ...config.chain[chain] }),
+      ),
+    }
+    return serv
+  })
+  return await Promise.all(chainServices)
 }
 
 export async function withTx<T>(services: Services, op: (tx: TransactionalServices) => Promise<T>): Promise<T> {
@@ -58,28 +51,6 @@ export async function withTx<T>(services: Services, op: (tx: TransactionalServic
   })
 }
 
-export async function createProvider(config: SpockConfig): Promise<ProviderService> {
-  const mainnetProvider = new RetryProvider(config.chain.mainnet.host, config.chain.mainnet.retries)
-  const mainnetNetworkState = await getNetworkState(mainnetProvider)
-  const arbitrumProvider = new RetryProvider(config.chain.arbitrum.host, config.chain.arbitrum.retries)
-  const arbitrumNetworkState = await getNetworkState(mainnetProvider)
-  const mainnet = {
-    provider: mainnetProvider,
-    networkState: mainnetNetworkState,
-  } as ProviderManager<'mainnet'>
-
-  const arbitrum = {
-    provider: arbitrumProvider,
-    networkState: arbitrumNetworkState,
-  } as ProviderManager<'arbitrum'>
-
-  const getProvider = (chain: string) =>
-    chain === 'mainnet'
-      ? mainnet
-      : chain === 'arbitrum'
-      ? arbitrum
-      : (function () {
-          throw new Error(`Provider for ${chain} not found`)
-        })()
-  return { mainnet, arbitrum, getProvider }
+export function createProvider(url: string, retries: number): Provider {
+  return new RetryProvider(url, retries)
 }
