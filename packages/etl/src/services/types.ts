@@ -9,16 +9,6 @@ import { SpockConfig } from './config'
 
 export type TableSchema = string
 
-export type SupportedChains = 'mainnet' | 'arbitrum'
-export interface ProviderManager<T> {
-  provider: Provider
-  networkState: NetworkState
-}
-export interface ProviderService {
-  mainnet: ProviderManager<'mainnet'>
-  arbitrum: ProviderManager<'arbitrum'>
-}
-
 export interface Services {
   provider: Provider
   db: DB

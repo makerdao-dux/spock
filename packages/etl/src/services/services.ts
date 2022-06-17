@@ -6,7 +6,7 @@ import { getNetworkState } from '../ethereum/getNetworkState'
 import { RetryProvider } from '../ethereum/RetryProvider'
 import { getInitialProcessorsState } from '../processors/state'
 import { getAllProcessors, SpockConfig } from './config'
-import { ProviderManager, ProviderService, Services, SupportedChains, TransactionalServices } from './types'
+import { Services, TransactionalServices } from './types'
 
 export async function createServices(config: SpockConfig): Promise<Services[]> {
   const db = createDB(config.db)

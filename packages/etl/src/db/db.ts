@@ -1,6 +1,6 @@
 import pg from 'pg-promise'
 import { IConnectionParameters } from 'pg-promise/typescript/pg-subset'
-import { SupportedChains, TableSchema } from '../services/types'
+import { TableSchema } from '../services/types'
 
 import { getLogger } from '../utils/logger'
 
