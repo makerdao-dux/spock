@@ -25,7 +25,7 @@ export class BlockGenerator {
 
   async init() {
     this.connection = await this.services.db.connect()
-    this.schema = this.services.tableSchema
+    this.schema = this.services.processorSchema
   }
 
   async deinit() {

@@ -11,7 +11,6 @@ export async function getOrCreateTx(
   transactionHash: string,
   block: BlockModel,
 ): Promise<PersistedTransaction> {
-  // TODO provider
   const transaction = await services.provider.getTransaction(transactionHash)
 
   assert(transaction, `Tx (${transactionHash}) couldn't be found - probably reorg is in progress`)
@@ -69,7 +68,7 @@ export async function addTx(
   await tx
     .none(
       `
-    INSERT INTO ${services.tableSchema}.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
+    INSERT INTO ${services.processorSchema}.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
     ON CONFLICT DO NOTHING
   `,
       {
@@ -86,7 +85,7 @@ export async function addTx(
     )
     .catch(silenceError(matchUniqueKeyError))
 
-  const storedTx = await getTx(services, transaction.hash!, services.tableSchema)
+  const storedTx = await getTx(services, transaction.hash!, services.processorSchema)
   assert(storedTx, 'storedTx MUST be defined')
 
   return storedTx

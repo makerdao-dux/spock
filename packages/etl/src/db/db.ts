@@ -17,7 +17,7 @@ export function createDB(
 ): {
   db: DB
   pg: pg.IMain
-  getColumnSetsForChain: (schema: TableSchema) => ColumnSets
+  getColumnSetsForChain: (processorSchema: TableSchema, extractedSchema: TableSchema) => ColumnSets
 } {
   const PgClient = pg({
     receive: (_data, res, e) => {
@@ -36,7 +36,8 @@ export function createDB(
   return {
     pg: PgClient,
     db: PgClient({ ...config }),
-    getColumnSetsForChain: (schema) => getColumnSets(PgClient, schema),
+    getColumnSetsForChain: (processorSchema, extractedSchema) =>
+      getColumnSets(PgClient, processorSchema, extractedSchema),
   }
 }
 
@@ -61,14 +62,13 @@ export function makeNullUndefined<T>(value: T | null): T | undefined {
   return value
 }
 
-export function getColumnSets(pg: pg.IMain, schema: TableSchema) {
-  const extracted = schema === 'vulcan2x' ? 'extracted' : 'extractedarbitrum'
+export function getColumnSets(pg: pg.IMain, processorSchema: TableSchema, extractedSchema: TableSchema) {
   return {
     block: new pg.helpers.ColumnSet(['number', 'hash', 'timestamp'], {
-      table: new pg.helpers.TableName({ table: 'block', schema }),
+      table: new pg.helpers.TableName({ table: 'block', schema: processorSchema }),
     }),
     extracted_logs: new pg.helpers.ColumnSet(['block_id', 'tx_id', 'log_index', 'address', 'data', 'topics'], {
-      table: new pg.helpers.TableName({ table: 'logs', schema: extracted }),
+      table: new pg.helpers.TableName({ table: 'logs', schema: extractedSchema }),
     }),
   }
 }

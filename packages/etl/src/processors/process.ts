@@ -77,7 +77,7 @@ export async function processBlocks(services: Services, processor: Processor): P
           // prettier-ignore
           `Marking blocks as processed from ${blocks[0].number} to ${blocks[0].number + blocks.length} with ${processor.name}`,
         )
-        await markBlocksProcessed(tx, blocks, processor, services.tableSchema)
+        await markBlocksProcessed(tx, blocks, processor, services.processorSchema)
         logger.debug(`Closing db transaction for ${blocks[0].number} to ${blocks[0].number + blocks.length}`)
       })
     }
@@ -101,7 +101,7 @@ export async function processBlocks(services: Services, processor: Processor): P
       captureException(e)
 
       await withConnection(services.db, async (c) => {
-        await stopJob(c, processor.name, allErrors, services.tableSchema)
+        await stopJob(c, processor.name, allErrors, services.processorSchema)
       })
       clearProcessorState(services, processor)
     }
@@ -111,7 +111,7 @@ export async function processBlocks(services: Services, processor: Processor): P
 }
 
 export async function getNextBlocks(services: Services, processor: Processor): Promise<BlockModel[]> {
-  const { db, config, tableSchema: schema } = services
+  const { db, config, processorSchema: schema } = services
 
   return withConnection(db, async (c) => {
     const batchSize = config.extractorWorker.batch

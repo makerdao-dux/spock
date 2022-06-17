@@ -15,8 +15,11 @@ export async function createServices(config: SpockConfig): Promise<Services[]> {
   const chainServices = chains.map(async (chain) => {
     // TODO better validation & typing here:
     //@ts-ignore //fixme
-    const tableSchema = config.chain[chain].tableSchema
-    const columnSets = db.getColumnSetsForChain(tableSchema)
+    const processorSchema = config.chain[chain].processorSchema
+    //@ts-ignore //fixme
+    const extractedSchema = config.chain[chain].extractedSchema
+    console.log('schemas to use', processorSchema, extractedSchema)
+    const columnSets = db.getColumnSetsForChain(processorSchema, extractedSchema)
 
     //@ts-ignore //fixme
     const provider = createProvider(config.chain[chain].host, config.chain[chain].retries)
@@ -28,7 +31,7 @@ export async function createServices(config: SpockConfig): Promise<Services[]> {
       config: { ...config, ...config.chain[chain] },
       provider,
       networkState,
-      tableSchema,
+      processorSchema,
       columnSets,
       processorsState: getInitialProcessorsState(
         //@ts-ignore //fixme

@@ -16,13 +16,12 @@ export async function registerProcessors(services: Services, processors: Process
   validateIntegrity(processors)
 
   await withConnection(services.db, async (c) => {
-    console.log('wtih connection', services.tableSchema)
     logger.info('De-registering all processors...')
-    await excludeAllJobs(c, services.tableSchema)
+    await excludeAllJobs(c, services.processorSchema)
 
     logger.info(`Registering configured processors(${processors.length})...`)
     for (const processor of processors) {
-      await registerProcessor(c, processor, services.tableSchema)
+      await registerProcessor(c, processor, services.processorSchema)
     }
   })
 }

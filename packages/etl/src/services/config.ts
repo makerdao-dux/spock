@@ -66,7 +66,8 @@ export const spockConfigSchema = z
       mainnet: z.object({
         host: z.string(),
         name: z.string(),
-        tableSchema: z.string(),
+        processorSchema: z.string(),
+        extractedSchema: z.string(),
         retries: z.number(),
         startingBlock: z.number(),
         lastBlock: z.number().optional(),
@@ -76,7 +77,8 @@ export const spockConfigSchema = z
       arbitrum: z.object({
         host: z.string(),
         name: z.string(),
-        tableSchema: z.string(),
+        processorSchema: z.string(),
+        extractedSchema: z.string(),
         retries: z.number(),
         startingBlock: z.number(),
         lastBlock: z.number().optional(),
