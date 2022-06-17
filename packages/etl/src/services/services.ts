@@ -5,38 +5,29 @@ import { createDB } from '../db/db'
 import { getNetworkState } from '../ethereum/getNetworkState'
 import { RetryProvider } from '../ethereum/RetryProvider'
 import { getInitialProcessorsState } from '../processors/state'
-import { getAllProcessors, SpockConfig } from './config'
+import { getAllProcessors, SpockConfig, SpockMultiChainConfig } from './config'
 import { Services, TransactionalServices } from './types'
 
-export async function createServices(config: SpockConfig): Promise<Services[]> {
+export async function createServices(config: SpockMultiChainConfig): Promise<Services[]> {
   const db = createDB(config.db)
 
   const chains = Object.keys(config.chain)
   const chainServices = chains.map(async (chain) => {
-    // TODO better validation & typing here:
-    //@ts-ignore //fixme
     const processorSchema = config.chain[chain].processorSchema
-    //@ts-ignore //fixme
     const extractedSchema = config.chain[chain].extractedSchema
-    console.log('schemas to use', processorSchema, extractedSchema)
     const columnSets = db.getColumnSetsForChain(processorSchema, extractedSchema)
 
-    //@ts-ignore //fixme
     const provider = createProvider(config.chain[chain].host, config.chain[chain].retries)
     const networkState = await getNetworkState(provider)
 
     const serv: Services = {
       ...db,
-      //@ts-ignore //fixme
       config: { ...config, ...config.chain[chain] },
       provider,
       networkState,
       processorSchema,
       columnSets,
-      processorsState: getInitialProcessorsState(
-        //@ts-ignore //fixme
-        getAllProcessors({ ...config.chain[chain] }),
-      ),
+      processorsState: getInitialProcessorsState(getAllProcessors({ ...config.chain[chain] })),
     }
     return serv
   })

@@ -1,21 +1,19 @@
 import { omit } from 'lodash'
 
-import { SpockConfig } from '../services/config'
+import { SpockMultiChainConfig } from '../services/config'
 import { getLogger } from './logger'
 
 const logger = getLogger('system')
 
-export function printSystemInfo(config: SpockConfig): void {
+export function printSystemInfo(config: SpockMultiChainConfig): void {
   logger.info(`Starting Spock ETL ver.${getVersion()}`)
   logger.info('Config:', maskConfig(config))
 }
 
-function maskConfig(config: SpockConfig): Record<string, any> {
+function maskConfig(config: SpockMultiChainConfig): Record<string, any> {
+  const chains = Object.keys(config.chain)
   return {
     ...omit(config, 'sentry', 'onStart'),
-    // printout simplified extractors/transformers config
-    extractors: (config.extractors || []).map((e) => e.name),
-    transformers: (config.transformers || []).map((t) => t.name),
     // avoid printing out password
     db: {
       host: config.db.host,

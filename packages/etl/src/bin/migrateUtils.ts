@@ -1,12 +1,12 @@
 import { join } from 'path'
 import { migrate as migrateDB } from 'postgres-migrations-oasis'
 
-import { SpockConfig } from '../services/config'
+import { SpockConfig, SpockMultiChainConfig } from '../services/config'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('migration')
 
-export async function migrateFromConfig(config: SpockConfig): Promise<void> {
+export async function migrateFromConfig(config: SpockMultiChainConfig): Promise<void> {
   await migrate(config.db, 'vulcan2x_core', join(__dirname, '../../migrate'))
 
   const migrationNames = Object.keys(config.migrations)

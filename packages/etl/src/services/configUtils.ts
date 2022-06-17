@@ -3,9 +3,9 @@ import { dirname, isAbsolute, join } from 'path'
 import { Dictionary } from 'ts-essentials'
 
 import { loadExternalModule } from '../utils/modules'
-import { getDefaultConfig, SpockConfig, spockConfigSchema } from './config'
+import { getDefaultConfig, SpockConfig, SpockMultiChainConfig, spockMultiChainConfigSchema } from './config'
 
-export function loadConfig(externalConfigPath: string): SpockConfig {
+export function loadConfig(externalConfigPath: string): SpockMultiChainConfig {
   const externalCfg = fixConfigPaths(externalConfigPath, loadExternalModule(externalConfigPath))
 
   const mergedConfig = mergeConfig(externalCfg)
@@ -13,11 +13,11 @@ export function loadConfig(externalConfigPath: string): SpockConfig {
   return mergedConfig
 }
 
-export function mergeConfig(externalCfg: any): SpockConfig {
+export function mergeConfig(externalCfg: any): SpockMultiChainConfig {
   const defaultCfg = getDefaultConfig(process.env)
 
   const finalConfig = merge({}, defaultCfg, externalCfg) as any
-  return spockConfigSchema.parse(finalConfig)
+  return spockMultiChainConfigSchema.parse(finalConfig)
 }
 
 /**

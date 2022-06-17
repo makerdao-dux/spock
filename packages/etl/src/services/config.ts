@@ -45,7 +45,20 @@ const statsWorkerSchema = z.object({
   interval: z.number(), // in minutes
 })
 
-//TODO still need to reconcile this with the user defined config
+const chainSchema = z.object({
+  host: z.string(),
+  name: z.string(),
+  processorSchema: z.string(),
+  extractedSchema: z.string(),
+  retries: z.number(),
+  startingBlock: z.number(),
+  lastBlock: z.number().optional(),
+  extractors: z.array(extractorSchema),
+  transformers: z.array(transformerSchema),
+})
+
+export type ChainConfig = z.infer<typeof chainSchema>
+
 export const spockConfigSchema = z
   .object({
     startingBlock: z.number(),
@@ -62,30 +75,41 @@ export const spockConfigSchema = z
     processorsWorker: processorsWorkerSchema,
     statsWorker: statsWorkerSchema,
 
-    chain: z.object({
-      mainnet: z.object({
+    db: z.union([
+      z.object({
+        database: z.string(),
+        user: z.string(),
+        password: z.string(),
         host: z.string(),
-        name: z.string(),
-        processorSchema: z.string(),
-        extractedSchema: z.string(),
-        retries: z.number(),
-        startingBlock: z.number(),
-        lastBlock: z.number().optional(),
-        extractors: z.array(extractorSchema),
-        transformers: z.array(transformerSchema),
+        port: z.number(),
       }),
-      arbitrum: z.object({
-        host: z.string(),
-        name: z.string(),
-        processorSchema: z.string(),
-        extractedSchema: z.string(),
-        retries: z.number(),
-        startingBlock: z.number(),
-        lastBlock: z.number().optional(),
-        extractors: z.array(extractorSchema),
-        transformers: z.array(transformerSchema),
-      }),
-    }),
+      z.record(z.string()),
+    ]),
+    sentry: z
+      .object({
+        dsn: z.string(),
+        environment: z.string(),
+      })
+      .optional(),
+  })
+  .merge(chainSchema)
+  .nonstrict()
+
+export type SpockConfig = z.infer<typeof spockConfigSchema>
+
+export const spockMultiChainConfigSchema = z
+  .object({
+    migrations: z.any(),
+    onStart: AnyFunc,
+
+    processDbLock: z.number(),
+    blockGenerator: blockGeneratorSchema,
+    extractorWorker: extractorWorkerSchema,
+    transformerWorker: transformerWorkerSchema,
+    processorsWorker: processorsWorkerSchema,
+    statsWorker: statsWorkerSchema,
+
+    chain: z.record(chainSchema),
     db: z.union([
       z.object({
         database: z.string(),
@@ -105,11 +129,11 @@ export const spockConfigSchema = z
   })
   .nonstrict()
 
-export type SpockConfig = z.infer<typeof spockConfigSchema>
+export type SpockMultiChainConfig = z.infer<typeof spockMultiChainConfigSchema>
 
 // Config type that should be used as an input for spock. It can have any additional fields (hence & Dictionary<any>)
 export type UserProvidedSpockConfig = DeepPartial<SpockConfig> &
-  Pick<SpockConfig, 'startingBlock' | 'lastBlock' | 'extractors' | 'transformers' | 'migrations'> &
+  Pick<SpockMultiChainConfig, 'chain' | 'migrations'> &
   Dictionary<any>
 
 // TODO refactor this to handle multiple hosts
@@ -147,6 +171,6 @@ export function isProd(): boolean {
   return process.env.NODE_ENV === 'production'
 }
 
-export function getAllProcessors(config: SpockConfig): Processor[] {
+export function getAllProcessors(config: ChainConfig): Processor[] {
   return [...config.extractors, ...config.transformers] as any
 }

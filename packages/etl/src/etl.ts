@@ -5,7 +5,7 @@ import { withLock } from './db/locks'
 import { process } from './processors/process'
 import { registerProcessors } from './processors/register'
 import { getInitialProcessorsState } from './processors/state'
-import { getAllProcessors, SpockConfig } from './services/config'
+import { getAllProcessors, SpockMultiChainConfig } from './services/config'
 import { createServices } from './services/services'
 import { Services } from './services/types'
 import { statsWorker } from './stats/stats'
@@ -15,7 +15,7 @@ import { printSystemInfo } from './utils/printSystemInfo'
 ethers.errors.setLogLevel('error')
 const logger = getLogger('runner')
 
-export async function etl(config: SpockConfig): Promise<void> {
+export async function etl(config: SpockMultiChainConfig): Promise<void> {
   const chainServices = await createServices(config)
 
   printSystemInfo(config)
