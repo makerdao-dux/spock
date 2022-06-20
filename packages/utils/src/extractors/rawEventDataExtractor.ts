@@ -108,10 +108,13 @@ export async function getPersistedLogs(
   const minId = min(blocksIds)
   const maxId = max(blocksIds)
 
+  //@ts-ignore
+  const extractedSchema = services.config.extractedSchema
+
   return (
     (await services.tx.manyOrNone(
       `
-SELECT * FROM extracted.logs
+SELECT * FROM ${extractedSchema}.logs
 WHERE logs.block_id >= \${id_min} AND logs.block_id <= \${id_max} AND address IN (\${addresses:csv});
   `,
       {
