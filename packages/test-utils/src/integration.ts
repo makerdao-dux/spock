@@ -16,7 +16,11 @@ export async function runIntegrationTest(externalConfig: UserProvidedSpockConfig
 
   await prepareDB(services.db, config)
 
-  const etlPromise = startETL(services)
+  // Must create an array of services to pass to startETL
+  const chainServices = []
+  chainServices.push(services)
+
+  const etlPromise = startETL(chainServices)
 
   etlPromise.catch((e) => {
     console.error('ETL FAILED WITH', e)

@@ -1,14 +1,14 @@
 import { Provider } from 'ethers/providers'
 import { assert } from 'ts-essentials'
 
-import { createDB, DbManager } from '../db/db'
+import { createDB, DbContext } from '../db/db'
 import { getNetworkState } from '../ethereum/getNetworkState'
 import { RetryProvider } from '../ethereum/RetryProvider'
 import { getInitialProcessorsState } from '../processors/state'
 import { getAllProcessors, SpockConfig } from './config'
 import { Services, TransactionalServices } from './types'
 
-export async function createServices(config: SpockConfig, db: DbManager): Promise<Services> {
+export async function createServices(config: SpockConfig, db: DbContext): Promise<Services> {
   const processorSchema = config.processorSchema
   const extractedSchema = config.extractedSchema
   const columnSets = db.getColumnSetsForChain(processorSchema, extractedSchema)

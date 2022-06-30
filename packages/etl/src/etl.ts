@@ -20,12 +20,12 @@ export async function etl(configs: SpockConfig[]): Promise<void> {
   // Each config will have identical db settings, but we don't want to create
   // duplicate connections to the db, so, arbitrarily, we just use the first.
   const [firstConfig] = configs
-  const dbManager = createDB(firstConfig.db)
+  const dbCtx = createDB(firstConfig.db)
 
   const chainServices = await Promise.all(
     configs.map((config) => {
       printSystemInfo(config)
-      return createServices(config, dbManager)
+      return createServices(config, dbCtx)
     }),
   )
 

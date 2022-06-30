@@ -13,13 +13,7 @@ describe('Block generator', () => {
   afterEach(() => destroyTestServices(services))
 
   it('should work with reorgs', async () => {
-    const provider = createProvider({
-      chain: {
-        host: 'http://localhost/not-existing',
-        name: 'mainnet',
-        retries: 0,
-      },
-    } as any)
+    const provider = createProvider('http://localhost/not-existing', 0)
 
     provider.getBlock = async (blockNumber: number): Promise<Block> => {
       const block = blocks[blockPointer++]

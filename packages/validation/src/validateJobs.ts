@@ -1,7 +1,7 @@
 /**
  * Script to checks if all jobs are still running
  */
-import { withConnection } from '@oasisdex/spock-etl/dist/db/db'
+import { createDB, withConnection } from '@oasisdex/spock-etl/dist/db/db'
 import { getAllJobs } from '@oasisdex/spock-etl/dist/db/models/Job'
 import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config'
 import { createServices } from '@oasisdex/spock-etl/dist/services/services'
@@ -12,10 +12,12 @@ const logger = getLogger('validate-jobs')
 export async function validateJobs(config: SpockConfig): Promise<void> {
   logger.info(`Running...`)
 
-  const spockServices = await createServices(config)
+  const dbCtx = createDB(config.db)
+
+  const spockServices = await createServices(config, dbCtx)
 
   await withConnection(spockServices.db, async (c) => {
-    const jobs = await getAllJobs(c)
+    const jobs = await getAllJobs(c, config.processorSchema)
     logger.info(`All jobs: ${jobs.length}`)
 
     const stoppedJobs = jobs.filter((j) => j.status === 'stopped')

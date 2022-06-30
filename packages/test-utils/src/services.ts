@@ -13,14 +13,20 @@ export async function createTestServices(services: Partial<Services> = {}): Prom
   const config = services.config ?? getTestConfig()
   const dbCtx = createDB(config.db)
   await prepareDB(dbCtx.db, config)
-  const provider = createProvider(config)
+  const provider = createProvider(config.chain.host, config.chain.retries)
   const networkState = config.chain.host ? await getNetworkState(provider) : dummyNetworkState
+
+  const processorSchema = config.processorSchema
+  const extractedSchema = config.extractedSchema
+  const columnSets = dbCtx.getColumnSetsForChain(processorSchema, extractedSchema)
 
   return {
     ...dbCtx,
     config,
     provider,
     networkState,
+    processorSchema,
+    columnSets,
     processorsState: getInitialProcessorsState(getAllProcessors(config)),
     ...services,
   }
