@@ -1,11 +1,12 @@
 import * as ethers from 'ethers'
 
 import { BlockGenerator } from './blockGenerator/blockGenerator'
+import { createDB } from './db/db'
 import { withLock } from './db/locks'
 import { process } from './processors/process'
 import { registerProcessors } from './processors/register'
 import { getInitialProcessorsState } from './processors/state'
-import { getAllProcessors, SpockMultiChainConfig } from './services/config'
+import { getAllProcessors, SpockConfig } from './services/config'
 import { createServices } from './services/services'
 import { Services } from './services/types'
 import { statsWorker } from './stats/stats'
@@ -15,10 +16,18 @@ import { printSystemInfo } from './utils/printSystemInfo'
 ethers.errors.setLogLevel('error')
 const logger = getLogger('runner')
 
-export async function etl(config: SpockMultiChainConfig): Promise<void> {
-  const chainServices = await createServices(config)
+export async function etl(configs: SpockConfig[]): Promise<void> {
+  // Each config will have identical db settings, but we don't want to create
+  // duplicate connections to the db, so, arbitrarily, we just use the first.
+  const [firstConfig] = configs
+  const dbManager = createDB(firstConfig.db)
 
-  printSystemInfo(config)
+  const chainServices = await Promise.all(
+    configs.map((config) => {
+      printSystemInfo(config)
+      return createServices(config, dbManager)
+    }),
+  )
 
   return startETL(chainServices)
 }

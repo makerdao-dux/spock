@@ -11,14 +11,13 @@ export type DbConnection = pg.IConnected<{}, any>
 export type DbTransactedConnection = pg.ITask<{}>
 export type ColumnSets = ReturnType<typeof getColumnSets>
 export type Connection = DbConnection | DbTransactedConnection
-
-export function createDB(
-  config: IConnectionParameters,
-): {
+export type DbManager = {
   db: DB
   pg: pg.IMain
   getColumnSetsForChain: (processorSchema: TableSchema, extractedSchema: TableSchema) => ColumnSets
-} {
+}
+
+export function createDB(config: IConnectionParameters): DbManager {
   const PgClient = pg({
     receive: (_data, res, e) => {
       // avoid clutter in output

@@ -3,21 +3,30 @@ import { dirname, isAbsolute, join } from 'path'
 import { Dictionary } from 'ts-essentials'
 
 import { loadExternalModule } from '../utils/modules'
-import { getDefaultConfig, SpockConfig, SpockMultiChainConfig, spockMultiChainConfigSchema } from './config'
+import { getDefaultConfig, SpockConfig, spockConfigSchema } from './config'
 
-export function loadConfig(externalConfigPath: string): SpockMultiChainConfig {
-  const externalCfg = fixConfigPaths(externalConfigPath, loadExternalModule(externalConfigPath))
+export function loadConfig(externalConfigPath: string): SpockConfig[] {
+  // Here we'll have an array of one or more configs:
+  const configModule = loadExternalModule(externalConfigPath)
 
-  const mergedConfig = mergeConfig(externalCfg)
+  if (!Array.isArray(configModule)) {
+    throw new Error(`User-config must be passsed as an array!`)
+  }
 
-  return mergedConfig
+  const mergedConfigs = configModule.map((cfg: any) => {
+    const externalCfg = fixConfigPaths(externalConfigPath, cfg)
+    const mergedConfig = mergeConfig(externalCfg)
+    return mergedConfig
+  })
+
+  return mergedConfigs
 }
 
-export function mergeConfig(externalCfg: any): SpockMultiChainConfig {
+export function mergeConfig(externalCfg: any): SpockConfig {
   const defaultCfg = getDefaultConfig(process.env)
 
   const finalConfig = merge({}, defaultCfg, externalCfg) as any
-  return spockMultiChainConfigSchema.parse(finalConfig)
+  return spockConfigSchema.parse(finalConfig)
 }
 
 /**

@@ -45,22 +45,18 @@ const statsWorkerSchema = z.object({
   interval: z.number(), // in minutes
 })
 
-const chainSchema = z.object({
-  host: z.string(),
-  name: z.string(),
-  processorSchema: z.string(),
-  extractedSchema: z.string(),
-  retries: z.number(),
-  startingBlock: z.number(),
-  lastBlock: z.number().optional(),
-  extractors: z.array(extractorSchema),
-  transformers: z.array(transformerSchema),
-})
-
-export type ChainConfig = z.infer<typeof chainSchema>
-
 export const spockConfigSchema = z
   .object({
+    name: z.string(),
+    processorSchema: z.string(),
+    extractedSchema: z.string(),
+
+    chain: z.object({
+      host: z.string(),
+      name: z.string(),
+      retries: z.number(),
+    }),
+
     startingBlock: z.number(),
     lastBlock: z.number().optional(),
     extractors: z.array(extractorSchema),
@@ -92,48 +88,13 @@ export const spockConfigSchema = z
       })
       .optional(),
   })
-  .merge(chainSchema)
   .nonstrict()
 
 export type SpockConfig = z.infer<typeof spockConfigSchema>
 
-export const spockMultiChainConfigSchema = z
-  .object({
-    migrations: z.any(),
-    onStart: AnyFunc,
-
-    processDbLock: z.number(),
-    blockGenerator: blockGeneratorSchema,
-    extractorWorker: extractorWorkerSchema,
-    transformerWorker: transformerWorkerSchema,
-    processorsWorker: processorsWorkerSchema,
-    statsWorker: statsWorkerSchema,
-
-    chain: z.record(chainSchema),
-    db: z.union([
-      z.object({
-        database: z.string(),
-        user: z.string(),
-        password: z.string(),
-        host: z.string(),
-        port: z.number(),
-      }),
-      z.record(z.string()),
-    ]),
-    sentry: z
-      .object({
-        dsn: z.string(),
-        environment: z.string(),
-      })
-      .optional(),
-  })
-  .nonstrict()
-
-export type SpockMultiChainConfig = z.infer<typeof spockMultiChainConfigSchema>
-
 // Config type that should be used as an input for spock. It can have any additional fields (hence & Dictionary<any>)
 export type UserProvidedSpockConfig = DeepPartial<SpockConfig> &
-  Pick<SpockMultiChainConfig, 'chain' | 'migrations'> &
+  Pick<SpockConfig, 'startingBlock' | 'lastBlock' | 'extractors' | 'transformers' | 'migrations'> &
   Dictionary<any>
 
 // TODO refactor this to handle multiple hosts
@@ -171,6 +132,6 @@ export function isProd(): boolean {
   return process.env.NODE_ENV === 'production'
 }
 
-export function getAllProcessors(config: ChainConfig): Processor[] {
+export function getAllProcessors(config: SpockConfig): Processor[] {
   return [...config.extractors, ...config.transformers] as any
 }
