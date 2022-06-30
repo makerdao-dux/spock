@@ -4,7 +4,7 @@ import { get, groupBy, sortBy } from 'lodash'
 import { withConnection } from '../db/db'
 import { BlockModel } from '../db/models/Block'
 import { getJob, stopJob } from '../db/models/Job'
-import { Services, TableSchema, TransactionalServices } from '../services/types'
+import { Services, TransactionalServices } from '../services/types'
 import { findConsecutiveSubsets, getLast } from '../utils/arrays'
 import { getSpockBreakout } from '../utils/breakout'
 import { getLogger } from '../utils/logger'
@@ -154,7 +154,7 @@ async function markBlocksProcessed(
   connection: any,
   blocks: BlockModel[],
   processor: Processor,
-  schema: TableSchema,
+  schema: string,
 ): Promise<void> {
   const lastId = getLast(blocks)!.id
 

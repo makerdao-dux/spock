@@ -7,8 +7,6 @@ import { NetworkState } from '../ethereum/getNetworkState'
 import { ProcessorsState } from '../processors/state'
 import { SpockConfig } from './config'
 
-export type TableSchema = string
-
 export interface Services {
   provider: Provider
   db: DB
@@ -17,7 +15,7 @@ export interface Services {
   columnSets: ColumnSets
   networkState: NetworkState
   processorsState: ProcessorsState
-  processorSchema: TableSchema
+  processorSchema: string
 }
 
 export interface TransactionalServices extends StrictOmit<Services, 'db'> {

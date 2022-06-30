@@ -1,6 +1,5 @@
 import pg from 'pg-promise'
 import { IConnectionParameters } from 'pg-promise/typescript/pg-subset'
-import { TableSchema } from '../services/types'
 
 import { getLogger } from '../utils/logger'
 
@@ -14,7 +13,7 @@ export type Connection = DbConnection | DbTransactedConnection
 export type DbManager = {
   db: DB
   pg: pg.IMain
-  getColumnSetsForChain: (processorSchema: TableSchema, extractedSchema: TableSchema) => ColumnSets
+  getColumnSetsForChain: (processorSchema: string, extractedSchema: string) => ColumnSets
 }
 
 export function createDB(config: IConnectionParameters): DbManager {
@@ -61,7 +60,7 @@ export function makeNullUndefined<T>(value: T | null): T | undefined {
   return value
 }
 
-export function getColumnSets(pg: pg.IMain, processorSchema: TableSchema, extractedSchema: TableSchema) {
+export function getColumnSets(pg: pg.IMain, processorSchema: string, extractedSchema: string) {
   return {
     block: new pg.helpers.ColumnSet(['number', 'hash', 'timestamp'], {
       table: new pg.helpers.TableName({ table: 'block', schema: processorSchema }),

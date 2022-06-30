@@ -1,4 +1,3 @@
-import { TableSchema } from '../../services/types'
 import { Connection, makeNullUndefined } from '../db'
 
 export interface JobModel {
@@ -13,7 +12,7 @@ export type JobStatus = 'processing' | 'stopped' | 'not-ready'
 
 export type WritableJobModel = Omit<JobModel, 'id'>
 
-export async function saveJob(c: Connection, job: WritableJobModel, schema: TableSchema): Promise<void> {
+export async function saveJob(c: Connection, job: WritableJobModel, schema: string): Promise<void> {
   const saveSQL = `
   INSERT INTO ${schema}.job(name, last_block_id, status)
   VALUES('${job.name}', ${job.last_block_id}, '${job.status}')
@@ -22,7 +21,7 @@ export async function saveJob(c: Connection, job: WritableJobModel, schema: Tabl
   await c.none(saveSQL)
 }
 
-export async function getJob(c: Connection, jobName: string, schema: TableSchema): Promise<JobModel | undefined> {
+export async function getJob(c: Connection, jobName: string, schema: string): Promise<JobModel | undefined> {
   const getSQL = `
       SELECT * FROM ${schema}.job j
       WHERE j.name='${jobName}'
@@ -31,7 +30,7 @@ export async function getJob(c: Connection, jobName: string, schema: TableSchema
   return await c.oneOrNone<JobModel>(getSQL).then(makeNullUndefined)
 }
 
-export async function getAllJobs(c: Connection, schema: TableSchema): Promise<JobModel[]> {
+export async function getAllJobs(c: Connection, schema: string): Promise<JobModel[]> {
   const countJobsDoneSQL = `
   SELECT * FROM ${schema}.job;
   `
@@ -40,12 +39,7 @@ export async function getAllJobs(c: Connection, schema: TableSchema): Promise<Jo
   return jobs
 }
 
-export async function setJobStatus(
-  c: Connection,
-  job: JobModel,
-  newStatus: JobStatus,
-  schema: TableSchema,
-): Promise<void> {
+export async function setJobStatus(c: Connection, job: JobModel, newStatus: JobStatus, schema: string): Promise<void> {
   const sql = `
     UPDATE ${schema}.job
     SET status=\${newStatus}, extra_info=NULL
@@ -55,7 +49,7 @@ export async function setJobStatus(
   await c.none(sql, { newStatus, jobName: job.name })
 }
 
-export async function stopJob(c: Connection, jobName: string, extraInfo: string, schema: TableSchema): Promise<void> {
+export async function stopJob(c: Connection, jobName: string, extraInfo: string, schema: string): Promise<void> {
   const sql = `
     UPDATE ${schema}.job
     SET status='stopped', extra_info=\${extraInfo}
@@ -65,7 +59,7 @@ export async function stopJob(c: Connection, jobName: string, extraInfo: string,
   await c.none(sql, { extraInfo, jobName })
 }
 
-export async function excludeAllJobs(c: Connection, schema: TableSchema): Promise<void> {
+export async function excludeAllJobs(c: Connection, schema: string): Promise<void> {
   const sql = `
     UPDATE ${schema}.job
     SET status='not-ready';

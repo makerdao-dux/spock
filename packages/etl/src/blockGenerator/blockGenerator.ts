@@ -11,7 +11,7 @@ import {
   removeBlockByHash,
   WritableBlockModel,
 } from '../db/models/Block'
-import { Services, TableSchema } from '../services/types'
+import { Services } from '../services/types'
 import { getLast } from '../utils/arrays'
 import { getSpockBreakout } from '../utils/breakout'
 import { getLogger } from '../utils/logger'
@@ -21,7 +21,7 @@ const logger = getLogger('block-generator')
 export class BlockGenerator {
   constructor(private readonly services: Services) {}
   private connection!: DbConnection
-  private schema!: TableSchema
+  private schema!: string
 
   async init() {
     this.connection = await this.services.db.connect()

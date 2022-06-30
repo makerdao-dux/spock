@@ -3,7 +3,7 @@ import { difference } from 'lodash'
 import { DbConnection, withConnection } from '../db/db'
 import { getBlockByNumber } from '../db/models/Block'
 import { excludeAllJobs, getJob, saveJob, setJobStatus, WritableJobModel } from '../db/models/Job'
-import { Services, TableSchema } from '../services/types'
+import { Services } from '../services/types'
 import { getLogger } from '../utils/logger'
 import { isExtractor, Processor } from './types'
 
@@ -26,7 +26,7 @@ export async function registerProcessors(services: Services, processors: Process
   })
 }
 
-async function registerProcessor(c: DbConnection, processor: Processor, schema: TableSchema): Promise<void> {
+async function registerProcessor(c: DbConnection, processor: Processor, schema: string): Promise<void> {
   const jobModel = await getJob(c, processor.name, schema)
 
   if (jobModel) {
@@ -47,7 +47,7 @@ async function registerProcessor(c: DbConnection, processor: Processor, schema: 
   }
 }
 
-async function getStartingBlockId(c: DbConnection, processor: Processor, schema: TableSchema): Promise<number> {
+async function getStartingBlockId(c: DbConnection, processor: Processor, schema: string): Promise<number> {
   if (processor.startingBlock === undefined) {
     return 0
   }

@@ -51,12 +51,6 @@ export const spockConfigSchema = z
     processorSchema: z.string(),
     extractedSchema: z.string(),
 
-    chain: z.object({
-      host: z.string(),
-      name: z.string(),
-      retries: z.number(),
-    }),
-
     startingBlock: z.number(),
     lastBlock: z.number().optional(),
     extractors: z.array(extractorSchema),
@@ -71,6 +65,11 @@ export const spockConfigSchema = z
     processorsWorker: processorsWorkerSchema,
     statsWorker: statsWorkerSchema,
 
+    chain: z.object({
+      host: z.string(),
+      name: z.string(),
+      retries: z.number(),
+    }),
     db: z.union([
       z.object({
         database: z.string(),
@@ -97,7 +96,6 @@ export type UserProvidedSpockConfig = DeepPartial<SpockConfig> &
   Pick<SpockConfig, 'startingBlock' | 'lastBlock' | 'extractors' | 'transformers' | 'migrations'> &
   Dictionary<any>
 
-// TODO refactor this to handle multiple hosts
 export function getDefaultConfig(env: Env): DeepPartial<SpockConfig> {
   return {
     processDbLock: 0x1337, // unique number that will be used to acquire lock on database

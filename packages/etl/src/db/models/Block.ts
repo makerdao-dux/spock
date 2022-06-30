@@ -1,7 +1,6 @@
 // eslint false positive
 // eslint-disable-next-line
 import type pg from 'pg-promise'
-import { TableSchema } from '../../services/types'
 
 import { makeNullUndefined, DbConnection, Connection } from '../db'
 
@@ -18,23 +17,19 @@ export interface WritableBlockModel {
   timestamp: Date
 }
 
-export async function getBlock(c: Connection, blockHash: string, schema: TableSchema): Promise<BlockModel | undefined> {
+export async function getBlock(c: Connection, blockHash: string, schema: string): Promise<BlockModel | undefined> {
   return c.oneOrNone<BlockModel>(`SELECT * FROM ${schema}.block WHERE hash=$1;`, blockHash).then(makeNullUndefined)
 }
 
-export async function getBlockById(c: Connection, id: number, schema: TableSchema): Promise<BlockModel | undefined> {
+export async function getBlockById(c: Connection, id: number, schema: string): Promise<BlockModel | undefined> {
   return c.oneOrNone<BlockModel>(`SELECT * FROM ${schema}.block WHERE id=$1;`, id).then(makeNullUndefined)
 }
 
-export async function getBlockByNumber(
-  c: DbConnection,
-  id: number,
-  schema: TableSchema,
-): Promise<BlockModel | undefined> {
+export async function getBlockByNumber(c: DbConnection, id: number, schema: string): Promise<BlockModel | undefined> {
   return c.oneOrNone<BlockModel>(`SELECT * FROM ${schema}.block WHERE number=$1;`, id).then(makeNullUndefined)
 }
 
-export async function getBlockByIdOrDie(c: Connection, id: number, schema: TableSchema): Promise<BlockModel> {
+export async function getBlockByIdOrDie(c: Connection, id: number, schema: string): Promise<BlockModel> {
   return c
     .oneOrNone<BlockModel>(`SELECT * FROM ${schema}.block WHERE id=$1;`, id)
     .then(makeNullUndefined)
@@ -46,12 +41,7 @@ export async function getBlockByIdOrDie(c: Connection, id: number, schema: Table
     })
 }
 
-export async function getBlockRange(
-  c: Connection,
-  start: number,
-  end: number,
-  schema: TableSchema,
-): Promise<BlockModel[]> {
+export async function getBlockRange(c: Connection, start: number, end: number, schema: string): Promise<BlockModel[]> {
   const sql = `
 SELECT * FROM ${schema}.block
 WHERE id >= ${start} AND id <= ${end}
@@ -60,7 +50,7 @@ WHERE id >= ${start} AND id <= ${end}
   return c.manyOrNone<BlockModel>(sql)
 }
 
-export async function getLastBlockNumber(c: Connection, schema: TableSchema): Promise<number | undefined> {
+export async function getLastBlockNumber(c: Connection, schema: string): Promise<number | undefined> {
   const lastBlock = await c.oneOrNone<{ number: number }>(
     `SELECT number FROM ${schema}.block ORDER BY number DESC LIMIT 1;`,
   )
@@ -68,7 +58,7 @@ export async function getLastBlockNumber(c: Connection, schema: TableSchema): Pr
   return lastBlock?.number
 }
 
-export async function removeBlockByHash(c: Connection, blockHash: string, schema: TableSchema): Promise<void> {
+export async function removeBlockByHash(c: Connection, blockHash: string, schema: string): Promise<void> {
   await c.none('DELETE FROM ' + schema + '.block WHERE hash=${hash};', {
     hash: blockHash,
   })
@@ -78,7 +68,7 @@ export async function insertBlocksBatch(
   c: Connection,
   pg: pg.IMain,
   blocks: WritableBlockModel[],
-  schema: TableSchema,
+  schema: string,
 ): Promise<BlockModel[]> {
   const BLOCK_COLUMN_SET = new pg.helpers.ColumnSet(['number', 'hash', 'timestamp'], {
     table: new pg.helpers.TableName({ table: 'block', schema }),

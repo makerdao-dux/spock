@@ -2,7 +2,7 @@ export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 import { makeNullUndefined } from '@oasisdex/spock-etl/dist/db/db'
 import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
-import { LocalServices, TableSchema, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
+import { LocalServices, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
 import { Transaction } from 'ethers/utils'
 import { assert } from 'ts-essentials'
 
@@ -23,7 +23,7 @@ export async function getOrCreateTx(
 export async function getTx(
   { tx }: LocalServices,
   txHash: string,
-  schema: TableSchema,
+  schema: string,
 ): Promise<PersistedTransaction | undefined> {
   return tx
     .oneOrNone(
@@ -39,7 +39,7 @@ export async function getTx(
 export async function getTxByIdOrDie(
   { tx }: LocalServices,
   txId: number,
-  schema: TableSchema,
+  schema: string,
 ): Promise<PersistedTransaction> {
   return tx
     .oneOrNone(
