@@ -14,5 +14,5 @@ export async function getNetworkState(provider: Provider): Promise<NetworkState>
 }
 
 export function isGanache(networkState: NetworkState): boolean {
-  return networkState.networkName.name === 'unknown'
+  return networkState.networkName.chainId === 1337
 }

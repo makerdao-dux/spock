@@ -139,3 +139,17 @@ ALTER TABLE vulcan2xArbitrum.job
 DROP TABLE vulcan2xArbitrum.extracted_block;
 DROP TABLE vulcan2xArbitrum.transformed_block;
 DROP TABLE vulcan2xArbitrum.done_job;
+
+
+--- Create table for chain IDs
+CREATE SCHEMA chains;
+
+CREATE TABLE chains.chain (
+  id           serial primary key,
+  chain_id     integer not null,
+  name         character varying(66) not null,
+
+  CONSTRAINT   unique_chain_name UNIQUE(name)
+);
+
+CREATE INDEX chain_id_index ON chains.chain(chain_id);

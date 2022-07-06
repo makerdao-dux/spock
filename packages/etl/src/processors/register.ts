@@ -2,6 +2,7 @@ import { difference } from 'lodash'
 
 import { DbConnection, withConnection } from '../db/db'
 import { getBlockByNumber } from '../db/models/Block'
+import { getChain, saveChain, WritableChainModel } from '../db/models/Chain'
 import { excludeAllJobs, getJob, saveJob, setJobStatus, WritableJobModel } from '../db/models/Job'
 import { Services } from '../services/types'
 import { getLogger } from '../utils/logger'
@@ -22,6 +23,35 @@ export async function registerProcessors(services: Services, processors: Process
     logger.info(`Registering configured processors(${processors.length})...`)
     for (const processor of processors) {
       await registerProcessor(c, processor, services.processorSchema)
+    }
+  })
+}
+
+function validateChainName(services: Services) {
+  // Ethers default response if network name is not found
+  return services.networkState.networkName.name === 'unknown'
+    ? services.config.chain.name
+    : services.networkState.networkName.name
+}
+
+export async function registerChain(services: Services): Promise<void> {
+  await withConnection(services.db, async (c) => {
+    const chainName = validateChainName(services)
+    logger.info(`Attempting to add chain ${chainName} to database...`)
+
+    const chainModel = await getChain(c, chainName)
+
+    if (chainModel) {
+      logger.info(`Chain name ${chainName} already exists in database, not adding`)
+      return
+    } else {
+      const newChain: WritableChainModel = {
+        name: chainName,
+        chain_id: services.networkState.networkName.chainId,
+      }
+
+      logger.info(`Adding chain ${chainName} to database`)
+      await saveChain(c, newChain)
     }
   })
 }

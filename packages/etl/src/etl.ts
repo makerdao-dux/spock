@@ -4,7 +4,7 @@ import { BlockGenerator } from './blockGenerator/blockGenerator'
 import { createDB } from './db/db'
 import { withLock } from './db/locks'
 import { process } from './processors/process'
-import { registerProcessors } from './processors/register'
+import { registerChain, registerProcessors } from './processors/register'
 import { getInitialProcessorsState } from './processors/state'
 import { getAllProcessors, SpockConfig } from './services/config'
 import { createServices } from './services/services'
@@ -43,6 +43,7 @@ export async function startETL(chainServices: Services[]): Promise<void> {
         }
 
         await registerProcessors(services, getAllProcessors(services.config))
+        await registerChain(services)
 
         const blockGenerator = new BlockGenerator(services)
         await blockGenerator.init()
