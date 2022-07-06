@@ -1,5 +1,5 @@
-import { getLogger } from '@oasisdex/spock-etl/dist/utils/logger'
-import { printSystemInfo } from '@oasisdex/spock-etl/dist/utils/printSystemInfo'
+import { getLogger } from '@makerdao-dux/spock-etl/dist/utils/logger'
+import { printSystemInfo } from '@makerdao-dux/spock-etl/dist/utils/printSystemInfo'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import express from 'express'

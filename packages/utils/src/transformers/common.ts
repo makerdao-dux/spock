@@ -1,4 +1,4 @@
-import { LocalServices } from '@oasisdex/spock-etl/dist/services/types'
+import { LocalServices } from '@makerdao-dux/spock-etl/dist/services/types'
 import { ethers } from 'ethers'
 import { zip } from 'lodash'
 import { Dictionary, ValueOf } from 'ts-essentials'

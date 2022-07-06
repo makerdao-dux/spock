@@ -1,4 +1,4 @@
-import { destroyTestServices, runIntegrationTest, withScopedEnv } from '@oasisdex/spock-test-utils'
+import { destroyTestServices, runIntegrationTest, withScopedEnv } from '@makerdao-dux/spock-test-utils'
 import { expect } from 'chai'
 import { Log } from 'ethers/providers'
 import { join } from 'path'

@@ -1,5 +1,5 @@
 {
-  "name": "@oasisdex/spock-test-utils",
+  "name": "@makerdao-dux/spock-test-utils",
   "version": "0.1.1",
   "license": "AGPL-3.0-or-later",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "test:fix": "yarn lint:fix && yarn format:fix && yarn test && yarn typecheck"
   },
   "peerDependencies": {
-    "@oasisdex/spock-etl": "^0.1.0"
+    "@makerdao-dux/spock-etl":"^0.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",

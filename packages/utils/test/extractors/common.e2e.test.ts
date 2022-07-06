@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import { addTx, matchMissingForeignKeyError, matchUniqueKeyError } from '../../src/extractors/common'
-import { createDB, withConnection } from '@oasisdex/spock-etl/dist/db/db'
+import { createDB, withConnection } from '@makerdao-dux/spock-etl/dist/db/db'
 import { ethers } from 'ethers'
-import { TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
-import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
+import { TransactionalServices } from '@makerdao-dux/spock-etl/dist/services/types'
+import { BlockModel } from '@makerdao-dux/spock-etl/dist/db/models/Block'
 
-import { prepareDB, getTestConfig, networkState } from '@oasisdex/spock-test-utils'
+import { prepareDB, getTestConfig, networkState } from '@makerdao-dux/spock-test-utils'
 
 const testConfig = getTestConfig()
 

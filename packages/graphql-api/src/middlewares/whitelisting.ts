@@ -1,4 +1,4 @@
-import { getLogger } from '@oasisdex/spock-etl/dist/utils/logger'
+import { getLogger } from '@makerdao-dux/spock-etl/dist/utils/logger'
 import { NextFunction, Request, RequestHandler, Response, response } from 'express'
 import * as fs from 'fs'
 import { fromPairs } from 'lodash'

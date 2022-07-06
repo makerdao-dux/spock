@@ -1,11 +1,11 @@
 /**
  * Script to checks if all jobs are still running
  */
-import { createDB, withConnection } from '@oasisdex/spock-etl/dist/db/db'
-import { getAllJobs } from '@oasisdex/spock-etl/dist/db/models/Job'
-import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config'
-import { createServices } from '@oasisdex/spock-etl/dist/services/services'
-import { getLogger } from '@oasisdex/spock-etl/dist/utils/logger'
+import { createDB, withConnection } from '@makerdao-dux/spock-etl/dist/db/db'
+import { getAllJobs } from '@makerdao-dux/spock-etl/dist/db/models/Job'
+import { SpockConfig } from '@makerdao-dux/spock-etl/dist/services/config'
+import { createServices } from '@makerdao-dux/spock-etl/dist/services/services'
+import { getLogger } from '@makerdao-dux/spock-etl/dist/utils/logger'
 
 const logger = getLogger('validate-jobs')
 

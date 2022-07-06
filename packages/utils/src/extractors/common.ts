@@ -1,8 +1,8 @@
 export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-import { makeNullUndefined } from '@oasisdex/spock-etl/dist/db/db'
-import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
-import { LocalServices, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
+import { makeNullUndefined } from '@makerdao-dux/spock-etl/dist/db/db'
+import { BlockModel } from '@makerdao-dux/spock-etl/dist/db/models/Block'
+import { LocalServices, TransactionalServices } from '@makerdao-dux/spock-etl/dist/services/types'
 import { Transaction } from 'ethers/utils'
 import { assert } from 'ts-essentials'
 
