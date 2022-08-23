@@ -21,14 +21,13 @@ export async function getOrCreateTx(
 }
 
 export async function getTx(
-  { tx }: LocalServices,
+  { tx, processorSchema }: LocalServices,
   txHash: string,
-  schema: string,
 ): Promise<PersistedTransaction | undefined> {
   return tx
     .oneOrNone(
       `
-  SELECT * FROM ${schema}.transaction
+  SELECT * FROM ${processorSchema}.transaction
   WHERE hash=\${txHash}
   `,
       { txHash },
@@ -37,14 +36,13 @@ export async function getTx(
 }
 
 export async function getTxByIdOrDie(
-  { tx }: LocalServices,
+  { tx, processorSchema }: LocalServices,
   txId: number,
-  schema: string,
 ): Promise<PersistedTransaction> {
   return tx
     .oneOrNone(
       `
-  SELECT * FROM ${schema}.transaction
+  SELECT * FROM ${processorSchema}.transaction
   WHERE id=\${txId}
   `,
       { txId },
@@ -63,12 +61,12 @@ export async function addTx(
   transaction: Transaction,
   block: BlockModel,
 ): Promise<PersistedTransaction> {
-  const { tx } = services
+  const { tx, processorSchema } = services
 
   await tx
     .none(
       `
-    INSERT INTO ${services.processorSchema}.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
+    INSERT INTO ${processorSchema}.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
     ON CONFLICT DO NOTHING
   `,
       {
@@ -85,7 +83,7 @@ export async function addTx(
     )
     .catch(silenceError(matchUniqueKeyError))
 
-  const storedTx = await getTx(services, transaction.hash!, services.processorSchema)
+  const storedTx = await getTx(services, transaction.hash!)
   assert(storedTx, 'storedTx MUST be defined')
 
   return storedTx
