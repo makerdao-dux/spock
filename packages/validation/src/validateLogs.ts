@@ -2,10 +2,10 @@
  * Script to automatically compare data stored in vulcan2x vs google big query public dataset.
  */
 import { BigQuery } from '@google-cloud/bigquery'
-import { withConnection } from '@oasisdex/spock-etl/dist/db/db'
-import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config'
-import { createServices } from '@oasisdex/spock-etl/dist/services/services'
-import { getLogger } from '@oasisdex/spock-etl/dist/utils/logger'
+import { createDB, withConnection } from '@makerdao-dux/spock-etl/dist/db/db'
+import { SpockConfig } from '@makerdao-dux/spock-etl/dist/services/config'
+import { createServices } from '@makerdao-dux/spock-etl/dist/services/services'
+import { getLogger } from '@makerdao-dux/spock-etl/dist/utils/logger'
 
 import { countBQ, countV2, findObservedAddresses, getLastBlockBQ } from './common'
 
@@ -18,7 +18,9 @@ export async function validateLogs(config: SpockConfig): Promise<void> {
     process.exit(1)
   }
 
-  const spockServices = await createServices(config)
+  const dbCtx = createDB(config.db)
+
+  const spockServices = await createServices(config, dbCtx)
   const bigQueryClient = new BigQuery()
 
   // big query has 1 day delay, so we query for last block that they are aware of

@@ -1,8 +1,8 @@
-import { startETL } from '@oasisdex/spock-etl/dist/etl'
-import { getDefaultConfig, UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config'
-import { Services } from '@oasisdex/spock-etl/dist/services/types'
-import { setSpockBreakout } from '@oasisdex/spock-etl/dist/utils/breakout'
-import { delay } from '@oasisdex/spock-etl/dist/utils/promises'
+import { startETL } from '@makerdao-dux/spock-etl/dist/etl'
+import { getDefaultConfig, UserProvidedSpockConfig } from '@makerdao-dux/spock-etl/dist/services/config'
+import { Services } from '@makerdao-dux/spock-etl/dist/services/types'
+import { setSpockBreakout } from '@makerdao-dux/spock-etl/dist/utils/breakout'
+import { delay } from '@makerdao-dux/spock-etl/dist/utils/promises'
 import { merge } from 'lodash'
 
 import { dumpDB, prepareDB } from './db'
@@ -16,7 +16,11 @@ export async function runIntegrationTest(externalConfig: UserProvidedSpockConfig
 
   await prepareDB(services.db, config)
 
-  const etlPromise = startETL(services)
+  // Must create an array of services to pass to startETL
+  const chainServices = []
+  chainServices.push(services)
+
+  const etlPromise = startETL(chainServices)
 
   etlPromise.catch((e) => {
     console.error('ETL FAILED WITH', e)

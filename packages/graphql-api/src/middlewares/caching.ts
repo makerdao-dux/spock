@@ -1,4 +1,4 @@
-import { getLogger } from '@oasisdex/spock-etl/dist/utils/logger'
+import { getLogger } from '@makerdao-dux/spock-etl/dist/utils/logger'
 import { middleware as cacheMiddleware, Options as CacheOptions } from 'apicache'
 import { RequestHandler } from 'express-serve-static-core'
 

@@ -1,5 +1,5 @@
-import { Env, getRequiredNumber, getRequiredString } from '@oasisdex/spock-etl/dist/services/configUtils'
-import { loadExternalModule } from '@oasisdex/spock-etl/dist/utils/modules'
+import { Env, getRequiredNumber, getRequiredString } from '@makerdao-dux/spock-etl/dist/services/configUtils'
+import { loadExternalModule } from '@makerdao-dux/spock-etl/dist/utils/modules'
 import { get, merge } from 'lodash'
 import { dirname, join } from 'path'
 

@@ -1,8 +1,8 @@
 export const DEFAULT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-import { makeNullUndefined } from '@oasisdex/spock-etl/dist/db/db'
-import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
-import { LocalServices, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
+import { makeNullUndefined } from '@makerdao-dux/spock-etl/dist/db/db'
+import { BlockModel } from '@makerdao-dux/spock-etl/dist/db/models/Block'
+import { LocalServices, TransactionalServices } from '@makerdao-dux/spock-etl/dist/services/types'
 import { Transaction } from 'ethers/utils'
 import { assert } from 'ts-essentials'
 
@@ -20,11 +20,14 @@ export async function getOrCreateTx(
   return storedTx
 }
 
-export async function getTx({ tx }: LocalServices, txHash: string): Promise<PersistedTransaction | undefined> {
+export async function getTx(
+  { tx, processorSchema }: LocalServices,
+  txHash: string,
+): Promise<PersistedTransaction | undefined> {
   return tx
     .oneOrNone(
       `
-  SELECT * FROM vulcan2x.transaction
+  SELECT * FROM ${processorSchema}.transaction
   WHERE hash=\${txHash}
   `,
       { txHash },
@@ -32,11 +35,14 @@ export async function getTx({ tx }: LocalServices, txHash: string): Promise<Pers
     .then(makeNullUndefined)
 }
 
-export async function getTxByIdOrDie({ tx }: LocalServices, txId: number): Promise<PersistedTransaction> {
+export async function getTxByIdOrDie(
+  { tx, processorSchema }: LocalServices,
+  txId: number,
+): Promise<PersistedTransaction> {
   return tx
     .oneOrNone(
       `
-  SELECT * FROM vulcan2x.transaction
+  SELECT * FROM ${processorSchema}.transaction
   WHERE id=\${txId}
   `,
       { txId },
@@ -55,12 +61,12 @@ export async function addTx(
   transaction: Transaction,
   block: BlockModel,
 ): Promise<PersistedTransaction> {
-  const { tx } = services
+  const { tx, processorSchema } = services
 
   await tx
     .none(
       `
-    INSERT INTO vulcan2x.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
+    INSERT INTO ${processorSchema}.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) VALUES(\${hash}, \${to}, \${from}, \${block_id}, \${nonce}, \${value}, \${gas_limit}, \${gas_price}, \${data})
     ON CONFLICT DO NOTHING
   `,
       {

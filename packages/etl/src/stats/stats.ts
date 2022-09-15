@@ -50,10 +50,10 @@ export async function getStats(services: Services): Promise<Stats> {
   return await withConnection(services.db, async (c) => {
     const blocksSynced =
       (
-        (await c.oneOrNone(`SELECT id FROM vulcan2x.block ORDER BY number DESC LIMIT 1;
+        (await c.oneOrNone(`SELECT id FROM ${services.processorSchema}.block ORDER BY number DESC LIMIT 1;
   `)) || {}
       ).id || 0
-    const allJobs = await getAllJobs(c)
+    const allJobs = await getAllJobs(c, services.processorSchema)
     const allJobsByName = groupBy(allJobs, 'name')
 
     const extractors = flatten(

@@ -1,8 +1,8 @@
 import { getPersistedLogs } from '../../src/extractors/rawEventDataExtractor'
-import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
+import { BlockModel } from '@makerdao-dux/spock-etl/dist/db/models/Block'
 
-import { destroyTestServices, createTestServices } from '@oasisdex/spock-test-utils'
-import { Services } from '@oasisdex/spock-etl/dist/services/types'
+import { destroyTestServices, createTestServices } from '@makerdao-dux/spock-test-utils'
+import { Services } from '@makerdao-dux/spock-etl/dist/services/types'
 
 describe('rawEventDataExtractor', () => {
   describe('getPersistedLogs', () => {

@@ -2,6 +2,7 @@ import { difference } from 'lodash'
 
 import { DbConnection, withConnection } from '../db/db'
 import { getBlockByNumber } from '../db/models/Block'
+import { getChain, saveChain, WritableChainModel } from '../db/models/Chain'
 import { excludeAllJobs, getJob, saveJob, setJobStatus, WritableJobModel } from '../db/models/Job'
 import { Services } from '../services/types'
 import { getLogger } from '../utils/logger'
@@ -17,42 +18,71 @@ export async function registerProcessors(services: Services, processors: Process
 
   await withConnection(services.db, async (c) => {
     logger.info('De-registering all processors...')
-    await excludeAllJobs(c)
+    await excludeAllJobs(c, services.processorSchema)
 
     logger.info(`Registering configured processors(${processors.length})...`)
     for (const processor of processors) {
-      await registerProcessor(c, processor)
+      await registerProcessor(c, processor, services.processorSchema)
     }
   })
 }
 
-async function registerProcessor(c: DbConnection, processor: Processor): Promise<void> {
-  const jobModel = await getJob(c, processor.name)
+function validateChainName(services: Services) {
+  // Ethers default response if network name is not found
+  return services.networkState.networkName.name === 'unknown'
+    ? services.config.chain.name
+    : services.networkState.networkName.name
+}
+
+export async function registerChain(services: Services): Promise<void> {
+  await withConnection(services.db, async (c) => {
+    const chainName = validateChainName(services)
+    logger.info(`Attempting to add chain ${chainName} to database...`)
+
+    const chainModel = await getChain(c, chainName)
+
+    if (chainModel) {
+      logger.info(`Chain name ${chainName} already exists in database, not adding`)
+      return
+    } else {
+      const newChain: WritableChainModel = {
+        name: chainName,
+        chain_id: services.networkState.networkName.chainId,
+      }
+
+      logger.info(`Adding chain ${chainName} to database`)
+      await saveChain(c, newChain)
+    }
+  })
+}
+
+async function registerProcessor(c: DbConnection, processor: Processor, schema: string): Promise<void> {
+  const jobModel = await getJob(c, processor.name, schema)
 
   if (jobModel) {
     logger.info(
       // prettier-ignore
       `Setting processor ${processor.name} status to 'processing'. Previously: '${jobModel.status}'`,
     )
-    await setJobStatus(c, jobModel, 'processing')
+    await setJobStatus(c, jobModel, 'processing', schema)
   } else {
     const newJob: WritableJobModel = {
       name: processor.name,
-      last_block_id: await getStartingBlockId(c, processor),
+      last_block_id: await getStartingBlockId(c, processor, schema),
       status: 'processing',
     }
 
     logger.info(`Registering a new processor ${processor.name}: (${JSON.stringify(newJob)})`)
-    await saveJob(c, newJob)
+    await saveJob(c, newJob, schema)
   }
 }
 
-async function getStartingBlockId(c: DbConnection, processor: Processor): Promise<number> {
+async function getStartingBlockId(c: DbConnection, processor: Processor, schema: string): Promise<number> {
   if (processor.startingBlock === undefined) {
     return 0
   }
 
-  const block = await getBlockByNumber(c, processor.startingBlock)
+  const block = await getBlockByNumber(c, processor.startingBlock, schema)
   if (block === undefined) {
     logger.warn(
       `Can't find starting block for ${processor.name}. BlockNumber: ${processor.startingBlock} is not yet synced. It will sync from the global start block`,

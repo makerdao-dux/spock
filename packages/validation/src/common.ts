@@ -1,6 +1,6 @@
 import { BigQuery } from '@google-cloud/bigquery'
-import { DbConnection } from '@oasisdex/spock-etl/dist/db/db'
-import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config'
+import { DbConnection } from '@makerdao-dux/spock-etl/dist/db/db'
+import { SpockConfig } from '@makerdao-dux/spock-etl/dist/services/config'
 
 export async function getLastBlockBQ(bigqueryClient: BigQuery): Promise<number> {
   const res = await bigqueryClient.query({

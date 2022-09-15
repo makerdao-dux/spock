@@ -1,9 +1,9 @@
-import { BlockModel } from '@oasisdex/spock-etl/dist/db/models/Block'
-import { isGanache } from '@oasisdex/spock-etl/dist/ethereum/getNetworkState'
-import { BlockExtractor } from '@oasisdex/spock-etl/dist/processors/types'
-import { LocalServices, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types'
-import { getLast } from '@oasisdex/spock-etl/dist/utils/arrays'
-import { timer } from '@oasisdex/spock-etl/dist/utils/timer'
+import { BlockModel } from '@makerdao-dux/spock-etl/dist/db/models/Block'
+import { isGanache } from '@makerdao-dux/spock-etl/dist/ethereum/getNetworkState'
+import { BlockExtractor } from '@makerdao-dux/spock-etl/dist/processors/types'
+import { LocalServices, TransactionalServices } from '@makerdao-dux/spock-etl/dist/services/types'
+import { getLast } from '@makerdao-dux/spock-etl/dist/utils/arrays'
+import { timer } from '@makerdao-dux/spock-etl/dist/utils/timer'
 import { Log } from 'ethers/providers'
 import { groupBy, max, min, uniqBy } from 'lodash'
 import { isString } from 'util'
@@ -108,10 +108,13 @@ export async function getPersistedLogs(
   const minId = min(blocksIds)
   const maxId = max(blocksIds)
 
+  //@ts-ignore
+  const extractedSchema = services.config.extractedSchema
+
   return (
     (await services.tx.manyOrNone(
       `
-SELECT * FROM extracted.logs
+SELECT * FROM ${extractedSchema}.logs
 WHERE logs.block_id >= \${id_min} AND logs.block_id <= \${id_max} AND address IN (\${addresses:csv});
   `,
       {

@@ -1,6 +1,6 @@
 {
-  "name": "@oasisdex/spock-utils",
-  "version": "0.1.0",
+  "name": "@makerdao-dux/spock-utils",
+  "version": "0.1.2",
   "license": "AGPL-3.0-or-later",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -21,7 +21,7 @@
     "test:fix": "true"
   },
   "peerDependencies": {
-    "@oasisdex/spock-etl": "^0.1.0"
+    "@makerdao-dux/spock-etl": "^0.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",
@@ -45,6 +45,5 @@
     "ts-node": "^8.5.4",
     "typescript": "^3.8.3"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

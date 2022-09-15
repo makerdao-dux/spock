@@ -47,6 +47,10 @@ const statsWorkerSchema = z.object({
 
 export const spockConfigSchema = z
   .object({
+    name: z.string(),
+    processorSchema: z.string(),
+    extractedSchema: z.string(),
+
     startingBlock: z.number(),
     lastBlock: z.number().optional(),
     extractors: z.array(extractorSchema),
@@ -111,11 +115,6 @@ export function getDefaultConfig(env: Env): DeepPartial<SpockConfig> {
     statsWorker: {
       enabled: true,
       interval: 10, // get stats every 10 minutes
-    },
-    chain: {
-      host: getRequiredString(env, 'VL_CHAIN_HOST'),
-      name: getRequiredString(env, 'VL_CHAIN_NAME'),
-      retries: 15, // retry for ~1 block time ~15 seconds
     },
     db: {
       database: getRequiredString(env, 'VL_DB_DATABASE'),

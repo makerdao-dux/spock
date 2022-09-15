@@ -21,9 +21,11 @@ const logger = getLogger('block-generator')
 export class BlockGenerator {
   constructor(private readonly services: Services) {}
   private connection!: DbConnection
+  private schema!: string
 
   async init() {
     this.connection = await this.services.db.connect()
+    this.schema = this.services.processorSchema
   }
 
   async deinit() {
@@ -31,14 +33,14 @@ export class BlockGenerator {
   }
 
   public async run(fromBlockNo: number, toBlockNo?: number): Promise<void> {
-    const isFromBlockMissing = !(await getBlockByNumber(this.connection, fromBlockNo))
+    const isFromBlockMissing = !(await getBlockByNumber(this.connection, fromBlockNo, this.schema))
     if (isFromBlockMissing) {
       logger.warn(`Initial block is missing. Starting from ${fromBlockNo}`)
       const blocks = await getRealBlocksStartingFrom(this.services, fromBlockNo)
-      await insertBlocksBatch(this.connection, this.services.pg, blocks.map(block2BlockModel))
+      await insertBlocksBatch(this.connection, this.services.pg, blocks.map(block2BlockModel), this.schema)
     }
 
-    const lastBlockNumber = await getLastBlockNumber(this.connection)
+    const lastBlockNumber = await getLastBlockNumber(this.connection, this.schema)
     assert(lastBlockNumber, `Last block couldn't be found. It should never happen at this point`)
 
     let currentBlockNo = lastBlockNumber + 1
@@ -48,19 +50,19 @@ export class BlockGenerator {
       logger.info('Waiting for block:', currentBlockNo)
 
       const blocks = await getRealBlocksStartingFrom(this.services, currentBlockNo)
-      const previousBlock = await getBlockByNumber(this.connection, currentBlockNo - 1)
+      const previousBlock = await getBlockByNumber(this.connection, currentBlockNo - 1, this.schema)
       assert(previousBlock, 'previousBlock should be defined')
 
       if (!verifyBlocksConsistency(previousBlock, blocks)) {
         currentBlockNo = currentBlockNo - 1
         logger.warn(`Backtracking to: ${currentBlockNo}`)
 
-        await removeBlockByHash(this.connection, previousBlock.hash)
+        await removeBlockByHash(this.connection, previousBlock.hash, this.schema)
 
         continue
       }
       logger.info(`Adding ${blocks.length} new blocks.`)
-      await insertBlocksBatch(this.connection, this.services.pg, blocks.map(block2BlockModel))
+      await insertBlocksBatch(this.connection, this.services.pg, blocks.map(block2BlockModel), this.schema)
 
       currentBlockNo = getLast(blocks)!.number + 1
     }

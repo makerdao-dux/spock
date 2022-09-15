@@ -8,9 +8,12 @@ export async function main(): Promise<void> {
     throw new Error('You need to provide config as a first argument!')
   }
 
-  const config = loadConfig(configPath)
+  const configs = loadConfig(configPath)
 
-  await migrateFromConfig(config)
+  // migrations need to be run synchronously
+  for (const config of configs) {
+    await migrateFromConfig(config)
+  }
 }
 
 runAndHandleErrors(main)

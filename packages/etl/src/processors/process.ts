@@ -77,7 +77,7 @@ export async function processBlocks(services: Services, processor: Processor): P
           // prettier-ignore
           `Marking blocks as processed from ${blocks[0].number} to ${blocks[0].number + blocks.length} with ${processor.name}`,
         )
-        await markBlocksProcessed(tx, blocks, processor)
+        await markBlocksProcessed(tx, blocks, processor, services.processorSchema)
         logger.debug(`Closing db transaction for ${blocks[0].number} to ${blocks[0].number + blocks.length}`)
       })
     }
@@ -101,7 +101,7 @@ export async function processBlocks(services: Services, processor: Processor): P
       captureException(e)
 
       await withConnection(services.db, async (c) => {
-        await stopJob(c, processor.name, allErrors)
+        await stopJob(c, processor.name, allErrors, services.processorSchema)
       })
       clearProcessorState(services, processor)
     }
@@ -111,12 +111,12 @@ export async function processBlocks(services: Services, processor: Processor): P
 }
 
 export async function getNextBlocks(services: Services, processor: Processor): Promise<BlockModel[]> {
-  const { db, config } = services
+  const { db, config, processorSchema: schema } = services
 
   return withConnection(db, async (c) => {
     const batchSize = config.extractorWorker.batch
 
-    const job = await getJob(c, processor.name)
+    const job = await getJob(c, processor.name, schema)
     if (!job) {
       throw new Error(`Missing processor: ${processor.name}`)
     }
@@ -130,12 +130,12 @@ export async function getNextBlocks(services: Services, processor: Processor): P
     const query =
       dependencies.length === 0
         ? `
-    SELECT b.* FROM vulcan2x.block b
+    SELECT b.* FROM ${schema}.block b
       WHERE b.id > ${job.last_block_id} ORDER BY id
       LIMIT ${batchSize};`
         : `
-      SELECT b.* FROM vulcan2x.block b
-        WHERE id<= (SELECT MIN(last_block_id) FROM vulcan2x.job  WHERE name in(
+      SELECT b.* FROM ${schema}.block b
+        WHERE id<= (SELECT MIN(last_block_id) FROM ${schema}.job  WHERE name in(
           ${dependencies.map((dependency) => `'${dependency}'`).join(',')}
         )) AND b.id > ${job.last_block_id} ORDER BY id
       LIMIT ${batchSize};`
@@ -150,11 +150,16 @@ export async function getNextBlocks(services: Services, processor: Processor): P
   })
 }
 
-async function markBlocksProcessed(connection: any, blocks: BlockModel[], processor: Processor): Promise<void> {
+async function markBlocksProcessed(
+  connection: any,
+  blocks: BlockModel[],
+  processor: Processor,
+  schema: string,
+): Promise<void> {
   const lastId = getLast(blocks)!.id
 
   const updateJobSQL = `
-  UPDATE vulcan2x.job
+  UPDATE ${schema}.job
   SET last_block_id = ${lastId}
   WHERE name='${processor.name}'
   `

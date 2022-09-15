@@ -7,7 +7,7 @@ const logger = getLogger('system')
 
 export function printSystemInfo(config: SpockConfig): void {
   logger.info(`Starting Spock ETL ver.${getVersion()}`)
-  logger.info('Config:', maskConfig(config))
+  logger.info(`Config for chain ${config.name}:`, maskConfig(config))
 }
 
 function maskConfig(config: SpockConfig): Record<string, any> {

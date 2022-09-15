@@ -15,6 +15,7 @@ export interface Services {
   columnSets: ColumnSets
   networkState: NetworkState
   processorsState: ProcessorsState
+  processorSchema: string
 }
 
 export interface TransactionalServices extends StrictOmit<Services, 'db'> {

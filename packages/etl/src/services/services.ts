@@ -1,25 +1,32 @@
 import { Provider } from 'ethers/providers'
+import { assert } from 'ts-essentials'
 
-import { createDB } from '../db/db'
+import { createDB, DbContext } from '../db/db'
 import { getNetworkState } from '../ethereum/getNetworkState'
 import { RetryProvider } from '../ethereum/RetryProvider'
 import { getInitialProcessorsState } from '../processors/state'
 import { getAllProcessors, SpockConfig } from './config'
 import { Services, TransactionalServices } from './types'
 
-export async function createServices(config: SpockConfig): Promise<Services> {
-  const db = createDB(config.db)
-  const provider = createProvider(config)
+export async function createServices(config: SpockConfig, db: DbContext): Promise<Services> {
+  const processorSchema = config.processorSchema
+  const extractedSchema = config.extractedSchema
+  const columnSets = db.getColumnSetsForChain(processorSchema, extractedSchema)
+
+  const provider = createProvider(config.chain.host, config.chain.retries)
   const networkState = await getNetworkState(provider)
   const processorsState = getInitialProcessorsState(getAllProcessors(config))
-
-  return {
-    provider,
+  const services: Services = {
     ...db,
     config,
+    provider,
     networkState,
+    processorSchema,
+    columnSets,
     processorsState,
   }
+
+  return services
 }
 
 export async function withTx<T>(services: Services, op: (tx: TransactionalServices) => Promise<T>): Promise<T> {
@@ -33,6 +40,6 @@ export async function withTx<T>(services: Services, op: (tx: TransactionalServic
   })
 }
 
-export function createProvider(config: SpockConfig): Provider {
-  return new RetryProvider(config.chain.host, config.chain.retries)
+export function createProvider(url: string, retries: number): Provider {
+  return new RetryProvider(url, retries)
 }
