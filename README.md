@@ -10,18 +10,18 @@ Centralized cache for blockchain data
 
 ## Packages 📦
 
-| Package                                | Version                                                                                                                                    | Description                                          |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| [`etl`](/packages/etl)                 | [![npm](https://img.shields.io/npm/v/@oasisdex/spock-etl.svg)](https://www.npmjs.com/package/@oasisdex/spock-etl)                          | Core package - responsible for etl                   |
-| [`graphql-api`](/packages/graphql-api) | [![npm](https://img.shields.io/npm/v/@oasisdex/spock-graphql-api.svg)](https://www.npmjs.com/package/@oasisdex/spock-graphql-api)          | Exposes data as GraphQL API                          |
-| [`test-utils`](/packages/test-utils)   | [![npm](https://img.shields.io/npm/v/@oasisdex/spock-test-utils.svg)](https://www.npmjs.com/package/@typechain/@oasisdex/spock-test-utils) | Utils for integration tests                          |
-| [`utils`](/packages/utils)             | [![npm](https://img.shields.io/npm/v/@oasisdex/spock-utils.svg)](https://www.npmjs.com/package/@oasisdex/spock-utils)                      | Common reusable extractors etc.                      |
-| [`validation`](/packages/validation)   | [![npm](https://img.shields.io/npm/v/@oasisdex/spock-validation.svg)](https://www.npmjs.com/package/@oasisdex/spock-validation)            | Scripts to validate spock data with Google Big Query |
+| Package                                | Version                                                                                                                                            | Description                                          |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`etl`](/packages/etl)                 | [![npm](https://img.shields.io/npm/v/@makerdao-dux/spock-etl.svg)](https://www.npmjs.com/package/@makerdao-dux/spock-etl)                          | Core package - responsible for etl                   |
+| [`graphql-api`](/packages/graphql-api) | [![npm](https://img.shields.io/npm/v/@makerdao-dux/spock-graphql-api.svg)](https://www.npmjs.com/package/@makerdao-dux/spock-graphql-api)          | Exposes data as GraphQL API                          |
+| [`test-utils`](/packages/test-utils)   | [![npm](https://img.shields.io/npm/v/@makerdao-dux/spock-test-utils.svg)](https://www.npmjs.com/package/@typechain/@makerdao-dux/spock-test-utils) | Utils for integration tests                          |
+| [`utils`](/packages/utils)             | [![npm](https://img.shields.io/npm/v/@makerdao-dux/spock-utils.svg)](https://www.npmjs.com/package/@makerdao-dux/spock-utils)                      | Common reusable extractors etc.                      |
+| [`validation`](/packages/validation)   | [![npm](https://img.shields.io/npm/v/@makerdao-dux/spock-validation.svg)](https://www.npmjs.com/package/@makerdao-dux/spock-validation)            | Scripts to validate spock data with Google Big Query |
 
 ## Installation
 
 ```
-npm install @oasisdex/spock-etl
+npm install @makerdao-dux/spock-etl
 ```
 
 ## Usage
@@ -32,12 +32,12 @@ spock-etl yourconfig.js|ts
 
 ### Commands
 
-#### @oasisdex/spock-etl
+#### @makerdao-dux/spock-etl
 
 - dist/bin/migrate config — launches database migrations (core and defined in the config)
 - dist/bin/etl config — launches ETL process (long running process)
 
-#### @oasisdex/graphql-api
+#### @makerdao-dux/graphql-api
 
 - dist/index.js config — run general GraphQL api exposing database schema `api`
 
