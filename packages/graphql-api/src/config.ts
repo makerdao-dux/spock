@@ -27,7 +27,13 @@ export interface ApiConfig {
 }
 
 export function getConfig(env: Env, configPath: string): ApiConfig {
-  const externalConfig = fixConfigPaths(configPath, loadExternalModule(configPath))
+  // Here we'll have an array of one or more configs:
+  const configs = loadExternalModule(configPath)
+  // The config module passed to this function is an array of two config objects,
+  // the API and DB settings should be shared between all configs, so just pick the first.
+  const [config] = configs
+
+  const externalConfig = fixConfigPaths(configPath, config)
 
   const defaultCfg: ApiConfig = {
     db: {
